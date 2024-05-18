@@ -9,7 +9,7 @@
 
       
 <p align="center">
-  <a href="https://github.com/sgxgsx/BluetToolkit/wiki">Documentation</a> •
+  <a href="https://github.com/sgxgsx/BlueToolkit/wiki">Documentation</a> •
   <a href="#install">Install</a> •
   <a href="#usage">Usage</a> •
   <a href="#available-bluetooth-vulnerabilities-and-attacks">Supported Exploits</a> •
@@ -193,7 +193,7 @@ We collected and classified Bluetooth vulnerabilities in an "Awesome Bluetooth S
 
 ### Currently BlueToolkit check the following vulnerabilities and attacks:
 
-For manual attacks refer to the [documentation](https://github.com/sgxgsx/BluetToolkit/wiki/Manual-Exploits).
+For manual attacks refer to the [documentation](https://github.com/sgxgsx/BlueToolkit/wiki/Manual-Exploits).
 
 | Vulnerability                                | Category | Type | Verification type  | Hardware req. | Tested |
 |----------------------------------------------| :---: | :---: | :---: | :---: | :---: |
