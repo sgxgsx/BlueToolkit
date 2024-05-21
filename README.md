@@ -179,7 +179,7 @@ Run bluekit with specific exploits:
 Run bluekit and list all available exploits:
    $ sudo -E env PATH=$PATH bluekit -l
 
-Documentation is available at: https://github.com/sgxgsx/wiki/
+Documentation is available at: https://github.com/sgxgsx/BlueToolkit/wiki
 ```
 
 
@@ -349,7 +349,7 @@ To test all vulnerabilities one would need to buy additional hardware:
 
 ### Running Bluetoolkit
 
-See https://github.com/sgxgsx/wiki/ for details on running BlueToolkit
+See https://github.com/sgxgsx/BlueToolkit/wiki for details on running BlueToolkit
 
 ### License
 
