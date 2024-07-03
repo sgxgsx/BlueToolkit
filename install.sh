@@ -173,7 +173,7 @@ sed -i 's/LMP_VSC_CMD_END = 0x06/LMP_VSC_CMD_END = 0x17/' /usr/share/BlueToolkit
 
 cd /usr/share/BlueToolkit/modules/tools/blueborne
 
-git clone https://github.com/marcinguy/blueborne-CVE-2017-1000251 /usr/share/BlueToolkit/modules/tools/blueborne/blueborne-CVE-2017-1000251
+git clone https://github.com/sgxgsx/blueborne-CVE-2017-1000251 /usr/share/BlueToolkit/modules/tools/blueborne/blueborne-CVE-2017-1000251
 
 cd /usr/share/BlueToolkit/modules/tools/blueborne/blueborne-CVE-2017-1000251
 
