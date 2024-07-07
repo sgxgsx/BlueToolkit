@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt-get install -y python3 python3-dev python3-pip build-essential python3.11-venv
+sudo apt-get install -y python3 python3-dev python3-pip build-essential python3.11-venv python3-venv
 sudo apt-get install -y bluez bluetooth libbluetooth-dev
 sudo apt-get install -y pulseaudio-module-bluetooth
 sudo apt-get install -y zstd unzip
