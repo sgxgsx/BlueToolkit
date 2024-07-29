@@ -128,7 +128,7 @@ cd bluing
 
 sudo python3.10 -m pip install --upgrade pip
 sudo python3.10 -m pip install venv # would fail, but might be needed
-sudo python3.10 -m vevn bluing
+sudo python3.10 -m venv bluing
 source bluing/bin/activate
 
 sudo python3.10 -m pip install dbus-python==1.2.18
