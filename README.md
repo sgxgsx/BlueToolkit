@@ -28,7 +28,7 @@ There are 43 Bluetooth exploits available in the toolkit, from known public expl
 
 The framework works in a Black-box fashion, but it is also possible to operate the toolkit in a Gray-box fashion. For that one needs to extend the framework and connect it to the Operating System of the target so that it would be possible to observe Bluetooth logs and guarantee no false positives. 
 
-Also, we have already used our framework and were able to find [64 new vulnerabilities](#results) in 22 products.
+Also, we have already used our framework and were able to find [64 new vulnerabilities](#results) in 22 cars (Audi, BMW, Chevrolet, Honda, Hyundai, Mercedes-Benz, Mini, Opel, Polestar, Renault, Skoda, Toyota, VW, Tesla).
 
 We have a [dedicated repository](https://github.com/sgxgsx) that provides various types of vulnerability templates. 
 
@@ -260,17 +260,6 @@ These attacks a novel/new and are tested by the framework
 | BLUFFS                                         | MitM            | ?                 | -                   | ✓ |   | ✓ |
 | BlueRepli                                    | Critical        | BAC                  | -                   |  |  |  |
 | CVE-2020-26555                               | MitM            | MiTM                 | -                   |  |  |  |
-
-### Vulnerabilities to be added in August
-
-3 vulnerabilities will be added in August (might change to June). Additionally, 1 privilege escalation vulnerability would be added at the same time.
-
-| Vulnerability                                | Category | Type | Verification type  | Hardware req. | Tested |
-|----------------------------------------------| :---: | :---: | :---: | :---: | :---: |
-| To be added in August                           | MitM            | MitM                 | Manual              | |  ✓ |
-| To be added in August   | MitM            | Info                 | Manual              | |  ✓ |
-| To be added in August                  | Critical        | BAC                  | Manual              | |  ✓ |
-
 
 
 # Bluetooth Vulnerabilities and Attacks
