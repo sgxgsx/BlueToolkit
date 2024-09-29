@@ -155,6 +155,11 @@ cp -R /usr/share/BlueToolkit/modules/tools/blueexploits/blueborne /usr/share/Blu
 cp -R /usr/share/BlueToolkit/modules/tools/blueexploits/hi_my_name_is_keyboard /usr/share/BlueToolkit/modules/tools/hi_my_name_is_keyboard
 rm -rf /usr/share/BlueToolkit/modules/tools/blueexploits
 
+gcc -o /usr/share/BlueToolkit/modules/tools/bleedingtooth/poc_badchoice_cve_2020_12352 /usr/share/BlueToolkit/modules/tools/bleedingtooth/poc_badchoice_cve_2020_12352.c -lbluetooth
+gcc -o /usr/share/BlueToolkit/modules/tools/bleedingtooth/poc_badkarma_cve_2020_12351 /usr/share/BlueToolkit/modules/tools/bleedingtooth/poc_badkarma_cve_2020_12351.c -lbluetooth
+gcc -o /usr/share/BlueToolkit/modules/tools/bleedingtooth/poc_badvibes_cve_2020_24490 /usr/share/BlueToolkit/modules/tools/bleedingtooth/poc_badvibes_cve_2020_24490.c -lbluetooth
+gcc -o /usr/share/BlueToolkit/modules/tools/bleedingtooth/exploit /usr/share/BlueToolkit/modules/tools/bleedingtooth/exploit.c -lbluetooth
+
 cd /usr/share/BlueToolkit/modules/tools/
 
 #### internalblue 
