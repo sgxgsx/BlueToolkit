@@ -26,3 +26,12 @@ cat ./requirements.sh | sed -e 's/qt5-default//' > ./requirements2.sh
 chmod +x ./requirements2.sh
 
 sudo ./requirements2.sh
+
+
+
+
+
+
+
+
+

@@ -77,3 +77,35 @@ Vagrant.configure("2") do |config|
   # SHELL
   config.vm.provision :shell, path: "./vagrant_install.sh", privileged: true
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

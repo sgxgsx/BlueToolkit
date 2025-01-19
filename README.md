@@ -35,9 +35,6 @@ We have a [dedicated repository](https://github.com/sgxgsx) that provides variou
 
 In addition to that, you can use MAP Account hijack attack to [elevate privileges](https://github.com/sgxgsx/mapAccountHijack) for the already established connections or as a chain in MitM and DoS attacks.
 
-#### Credit
-
-This work has been done at [Cyber Defence Campus](https://www.cydcampus.admin.ch/en) and [System Security Group at ETH Zurich](https://syssec.ethz.ch/). 
 
 # Install BlueToolkit
 
