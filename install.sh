@@ -194,3 +194,22 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)/tools/blueborne
 sudo chown -R $USER:$USER /usr/share/BlueToolkit
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

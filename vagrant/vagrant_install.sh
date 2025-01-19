@@ -10,3 +10,30 @@ chmod +x /usr/share/BlueToolkit/install.sh
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
