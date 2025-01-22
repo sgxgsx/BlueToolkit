@@ -454,7 +454,6 @@ We responsibly disclosed all of the vulnerabilities. All manufacturers had time 
 | Renault       | Megane          | 2016 | 2,1        | MitM      | E0 Algorithm is used (due to BT vers)  | Unknown                                       |                                                                                              |
 | Renault       | Megane          | 2016 | 2,1        | MitM      | SSP not supported                      | Unknown                                       |                                                                                              |
 | Renault       | Megane          | 2021 | 4,2        | MitM      | Insecure NC implementation             | Unknown                                       |                                                                                              |
-| Renault       | Megane          | 2021 | 4,2        | MitM      | NiNo                                   | Unknown                                       | Might have been marked as vulnerable due to Vehicular NiNo (should be checked independently) |
 | Renault       | Megane          | 2021 | 4,2        | MitM      | Vehicular NiNo                         | Unknown                                       |                                                                                              |
 | Renault       | ZOE             | 2021 | 4,2        | MitM      | NiNo                                   | Unknown                                       | Might have been marked as vulnerable due to Vehicular NiNo (should be checked independently) |
 | Renault       | ZOE             | 2021 | 4,2        | MitM      | Insecure NC implementation             | Unknown                                       |                                                                                              |
@@ -468,8 +467,16 @@ We responsibly disclosed all of the vulnerabilities. All manufacturers had time 
 | VW            | T6.1            | 2021 | 4,1        | MitM      | KNOB                                   | Acknowledged. Fixing in a new firmw. version  |                                                                                              |
 | VW            | T6.1            | 2021 | 4,1        | MitM      | NiNo                                   | Acknowledged. Fixing in a new firmw. version  |                                                                                              |
 | VW            | T6.1            | 2021 | 4,1        | MitM      | Vehicular NiNo                         | Acknowledged. Fixing in a new firmw. version  |                                                                                              |
-| VW            | T6.1            | 2021 | 4,1        | MitM      | CVE-2018-5383                          | Acknowledged. Fixing in a new firmw. version  |                                                                                              |
+| VW            | T6.1            | 2021 | 4,1        | MitM      | CVE-2018-5383                          | Acknowledged. Fixing in a new firmw. version  |                                                                   
+
+## Additional vulnerabilities discovered 
+These vulnerabilities were discovered accidentally while using this framework or we are not sure about the results shown by the tool and human in the loop. Nevertheless the vulnerabilities were reported to the manufacturers.
+
+| Manufacturer  | Model           | Year | BT version | Vuln Type | Vulnerability                          | Status                                        | Comment                                                                                      |
+|---------------|-----------------|------|------------|-----------|----------------------------------------|-----------------------------------------------|----------------------------------------------------------------------------------------------|
+| Renault       | Megane          | 2021 | 4,2        | MitM      | NiNo                                   | Unknown                                       | Might have been marked as vulnerable due to Vehicular NiNo (should be checked independently) |
 | Tesla         | Model Y         | 2023 | 5,2        |           | Accidental crash (on BT connection)    | Not reproduced                                |          
+
 
 ## Novel Attacks
 
