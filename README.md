@@ -13,10 +13,11 @@
   <a href="#install">Install</a> •
   <a href="#usage">Usage</a> •
   <a href="#available-bluetooth-vulnerabilities-and-attacks">Supported Exploits</a> •
+  <a href="#TODO-list">TODO list</a> •
   <a href=#bluetooth-classic-and-bluetooth-low-energy-vulnerabilities-and-attacks">Bluetooth Classic and BLE vulnerabilities and attacks</a> •
   <a href="#results-from-testing">Results</a> •
   <a href="#hardware">Hardware</a> •
-  <a href="#license">License</a>
+  <a href="#license">License</a> 
 </p>
 
 
@@ -124,6 +125,8 @@ After Installation:
   ./{HARDWARE}_installation.sh
   ```
 </details>
+
+
 
 
 ### Usage
@@ -258,6 +261,17 @@ These attacks a novel/new and are tested by the framework
 | BLUFFS                                         | MitM            | ?                 | -                   | ✓ |   | ✓ |
 | BlueRepli                                    | Critical        | BAC                  | -                   |  |  |  |
 | CVE-2020-26555                               | MitM            | MiTM                 | -                   |  |  |  |
+
+
+
+## TODO List
+
+- [ ] **Add Support for BLE (Bluetooth Low Energy)**  
+  - Implement BLE functionality to enhance the project's connectivity capabilities. 
+- [ ] **Resolve Python Version Compatibility**  
+  - Investigate porting or adapting the recoinnassance part done by bluing to work seamlessly with the most recent Python 3 version.  
+- [ ] **Continuously (Re-)Develop Proofs of Concept (PoCs)**  
+  - Develop new PoCs to explore additional use cases or features.  
 
 
 # Bluetooth Vulnerabilities and Attacks
