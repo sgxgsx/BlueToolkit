@@ -132,7 +132,7 @@ After Installation:
 ### Usage
 
 ```sh
-sudo -E env PATH=$PATH bluekit -h
+sudo bluekit -h
 ```
 
 This will display help information for the tool. Here are all the parameters it supports.
@@ -166,19 +166,19 @@ options:
 
 EXAMPLES:
 Run bluekit recon:
-   $ sudo -E env PATH=$PATH bluekit -t AA:BB:CC:DD:EE:FF -r
+   $ sudo bluekit -t AA:BB:CC:DD:EE:FF -r
 
 Run bluekit connectivity check:
-   $ sudo -E env PATH=$PATH bluekit -t AA:BB:CC:DD:EE:FF -ct
+   $ sudo bluekit -t AA:BB:CC:DD:EE:FF -ct
 
 Run bluekit with a specific exploit:
-   $ sudo -E env PATH=$PATH bluekit -t AA:BB:CC:DD:EE:FF -e invalid_max_slot
+   $ sudo bluekit -t AA:BB:CC:DD:EE:FF -e invalid_max_slot
 
 Run bluekit with specific exploits:
-   $ sudo -E env PATH=$PATH bluekit -t AA:BB:CC:DD:EE:FF -e invalid_max_slot au_rand_flooding internalblue_knob
+   $ sudo bluekit -t AA:BB:CC:DD:EE:FF -e invalid_max_slot au_rand_flooding internalblue_knob
 
 Run bluekit and list all available exploits:
-   $ sudo -E env PATH=$PATH bluekit -l
+   $ sudo bluekit -l
 
 Documentation is available at: https://github.com/sgxgsx/BlueToolkit/wiki
 ```
