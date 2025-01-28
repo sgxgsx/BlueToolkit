@@ -14,7 +14,7 @@
   <a href="#usage">Usage</a> •
   <a href="#available-bluetooth-vulnerabilities-and-attacks">Supported Exploits</a> •
   <a href="#TODO-list">TODO list</a> •
-  <a href=#bluetooth-classic-and-bluetooth-low-energy-vulnerabilities-and-attacks">Bluetooth Classic and BLE vulnerabilities and attacks</a> •
+  <a href=#bluetooth-vulnerabilities-and-attacks">Bluetooth Classic and BLE vulnerabilities and attacks</a> •
   <a href="#results-from-testing">Results</a> •
   <a href="#hardware">Hardware</a> •
   <a href="#license">License</a> 
