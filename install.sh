@@ -7,7 +7,7 @@ sudo apt-get install -y bluez bluetooth libbluetooth-dev
 # PulseAudio Bluetooth module
 sudo apt-get install -y pulseaudio-module-bluetooth
 # Development, system utilities and Python dependencies
-sudo apt-get install -y zstd unzip git python-is-python3 rfkill meson patchelf ubertooth adb python3-pip python3-dev python3-cairo-dev libcairo2-dev libgirepository1.0-dev libdbus-1-dev bluez-tools
+sudo apt-get install -y zstd unzip git python-is-python3 rfkill meson patchelf ubertooth adb python3-pip python3-dev python3-cairo-dev libcairo2-dev libgirepository1.0-dev libdbus-1-dev bluez-tools bluez-hcidump
 # System libraries
 sudo apt-get install -y libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev zlib1g-dev libncurses5-dev libnss3-dev libreadline-dev libffi-dev wget
 # ARM and Android tools
