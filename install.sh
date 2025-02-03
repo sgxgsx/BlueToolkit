@@ -36,9 +36,29 @@ python3 -m pip install tabulate colorama
 # Install pybluez
 python3 -m pip install git+https://github.com/pybluez/pybluez.git#egg=pybluez #--break-system-packages
 
+# Parse command line arguments
+DEV_MODE=false
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -dev)
+      DEV_MODE=true
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
 # installing bluekit
 cd /usr/share/BlueToolkit/bluekit/
-pip install .
+if [ "$DEV_MODE" = true ]; then
+    echo "Installing bluekit in development mode..."
+    pip install -e .
+else
+    echo "Installing bluekit..."
+    pip install .
+fi
 
 ## Installing tools in modules
 cd /usr/share/BlueToolkit/modules
