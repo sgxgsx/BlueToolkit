@@ -1,4 +1,19 @@
 #!/bin/bash
+
+# Parse command line arguments
+DEV_MODE=false
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -dev)
+      DEV_MODE=true
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
 sudo apt-get update
 # Core Python and build essentials
 sudo apt-get install -y python3 python3-dev python3-pip build-essential python3.11-venv python3-venv
@@ -38,7 +53,14 @@ python3 -m pip install git+https://github.com/pybluez/pybluez.git#egg=pybluez #-
 
 # installing bluekit
 cd /usr/share/BlueToolkit/bluekit/
-pip install .
+
+if [ "$DEV_MODE" = true ]; then
+    echo "Installing bluekit in development mode..."
+    pip install -e .
+else
+    echo "Installing bluekit..."
+    pip install .
+fi
 
 ## Installing tools in modules
 cd /usr/share/BlueToolkit/modules
