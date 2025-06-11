@@ -1,0 +1,7 @@
+name: "nexus5"
+description: "Nexus 5 phone"
+setup_verification: ""
+needs_setup_verification: true
+working_directory: null
+bt_version_min: 2.0
+bt_version_max: 5.3

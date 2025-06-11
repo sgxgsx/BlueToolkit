@@ -1,0 +1,7 @@
+name: "esp32"
+description: "ESP 32 board for braktooth exploits"
+setup_verification: ""
+needs_setup_verification: true
+working_directory: "/braktooth/wdissector"
+bt_version_min: 4.0
+bt_version_max: 5.3
