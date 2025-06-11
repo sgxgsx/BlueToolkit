@@ -82,7 +82,7 @@ if [ "$DEV_MODE" = true ]; then
 else
     # In normal mode we install bluekit from github directly
     echo "Installing bluekit..."
-    pip install git+https://github.com/sgxgsx/bluekit.git
+    pip install git+https://github.com/sgxgsx/bluekit.git@development
 fi
 
 ## Installing tools in modules
@@ -125,8 +125,7 @@ rm -f esp32driver.zip
 git clone https://github.com/francozappa/blur $TOOLS_DIR/blur
 
 #### Installing Internalblue, blueborne, bleedingteeth, custom_exploits
-
-git clone https://github.com/sacca97/bluetoothexploits $TOOLS_DIR/blueexploits
+git clone --single-branch --branch development https://github.com/sgxgsx/bluetoothexploits $TOOLS_DIR/blueexploits
 
 cp -r $TOOLS_DIR/blueexploits/*/ $TOOLS_DIR/
 rm -rf $TOOLS_DIR/blueexploits
