@@ -49,12 +49,11 @@ chown -R $SUDO_USER:$SUDO_USER /usr/share/BlueToolkit
 
 
 # cloning bluekit
-# git clone https://github.com/sacca97/bluekit.git /usr/share/BlueToolkit/bluekit
 mkdir -p /usr/share/BlueToolkit/.logs 
 mkdir /usr/share/BlueToolkit/modules
 
-cp -r $PWD/exploits /usr/share/BlueToolkit/
-cp -r $PWD/hardware /usr/share/BlueToolkit/
+cp -r $PWD/BlueToolkit/exploits /usr/share/BlueToolkit/
+cp -r $PWD/BlueToolkit/hardware /usr/share/BlueToolkit/
 
 
 mkdir $TOOLS_DIR -p
@@ -73,12 +72,16 @@ pip install git+https://github.com/sacca97/pybtool.git
 
 
 if [ "$DEV_MODE" = true ]; then
+    # In dev mode we clone bluekit and install it in editable mode
     echo "Installing bluekit in development mode..."
     git submodule update --init --recursive
-    pip install -e /usr/share/BlueToolkit/bluekit/
+    cd $PWD/BlueToolkit/bluekit/
+    git checkout development
+    pip install -e $PWD/BlueToolkit/bluekit/
 else
+    # In normal mode we install bluekit from github directly
     echo "Installing bluekit..."
-    pip install git+https://github.com/sacca97/bluekit.git
+    pip install git+https://github.com/sgxgsx/bluekit.git
 fi
 
 ## Installing tools in modules
