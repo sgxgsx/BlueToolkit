@@ -77,6 +77,7 @@ if [ "$DEV_MODE" = true ]; then
     git submodule update --init --recursive
     cd $PWD/BlueToolkit/bluekit/
     git checkout development
+    git pull origin development
     pip install -e $PWD/BlueToolkit/bluekit/
 else
     # In normal mode we install bluekit from github directly
