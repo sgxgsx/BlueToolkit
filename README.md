@@ -15,7 +15,7 @@
   <a href="#available-bluetooth-vulnerabilities-and-attacks">Supported Exploits</a> •
   <a href="#TODO-list">TODO list</a> •
   <a href="#bluetooth-vulnerabilities-and-attacks">Bluetooth Classic and BLE vulnerabilities and attacks</a> •
-  <a href="#results-from-testing">Results</a> •
+  <a href="https://github.com/sgxgsx/BlueToolkit/tree/development/evaluation/README.md">Results</a> •
   <a href="#hardware">Hardware</a> •
   <a href="#license">License</a> 
 </p>
@@ -38,6 +38,8 @@ We evaluated BlueToolkit on 22 cars from different vendors (Audi, BMW, Chevrolet
 
 
 In addition, we show how to [Hijack online accounts via MAP](https://github.com/sgxgsx/mapAccountHijack) for already established connections or with a MitM position.
+
+This work led to a research paper accepted at WOOT 25': *add missing link when we have it*
 
 
 # Installation
