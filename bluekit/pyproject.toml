@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"] # Or your preferred build backend, e.g., ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bluekit"
+version = "1.0.0"
+description = "Bluekit is an extensible engine, CLI tool used in BlueToolkit." # Add a brief description
+readme = "README.md" # Assumes you have a README.md file
+requires-python = ">=3.9" # Specify your minimum Python version
+license = "MIT"
+authors = [
+  { name = "sgxgsx", email = "your.email@example.com" } # Replace with your info
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Linux",
+]
+dependencies = [
+    "pybtool @ git+https://github.com/sacca97/pybtool.git#egg=main",
+]
+
+[project.urls]
+Homepage = "https://github.com/sgxgsx/BlueToolkit/bluekit" # Replace with your project's homepage
+
+[project.scripts]
+bluekit = "bluekit.bluekit:main"
