@@ -37,16 +37,26 @@ BlueToolkit is a modular, black-box Bluetooth security testing framework for Blu
 We evaluated BlueToolkit on 22 cars from different vendors (Audi, BMW, Chevrolet, Honda, Hyundai, Mercedes-Benz, Mini, Opel, Polestar, Renault, Skoda, Toyota, VW, Tesla) and uncovered [128 vulnerabilities](#results). 
 
 
-In addition, we show how to Hijack online accounts via  [MAP](https://github.com/sgxgsx/mapAccountHijack) for the already established connections or as a chain in MitM and DoS attacks.
+In addition, we show how to [Hijack online accounts via MAP](https://github.com/sgxgsx/mapAccountHijack) for already established connections or with a MitM position.
 
 
 # Installation
 
-BlueToolkit has 2 installation stages: general and specific module installation.
-The general installation downloads the code, modules and tools available in the toolkit and tries to set up modules that do not require human interaction. The specific module installation requires a human to verify that the needed hardware is connected to the device on which the toolkit is being installed. 
+BlueToolkit can be installed on bare metal Ubuntu/Debian systems (recommended) or using a Virtual Machine. In both cases the installer will prompt to install the specific modules for Braktooth and BluetoothAssistant, which require specific hardware devices to be available and plugged in.
+Standalone modules installation can also be done separately by running the installer again.
 
-## Install
-We provide 2 installation options: virtual machine or Ubuntu/Debian.
+
+<details>
+  <summary>Normal Installation</summary>
+  Installation:
+
+  ```sh
+  git clone https://github.com/sgxgsx/BlueToolkit
+  chmod +x ./BlueToolkit/install.sh
+  sudo ./BlueToolkit/install.sh [-dev]
+  ```
+
+</details>
 
 <details>
   <summary>VM Installation</summary>
@@ -71,74 +81,16 @@ After Installation:
 
 
 </details>
-<details>
-  <summary>Ubuntu/Debian Installation</summary>
-  Installation:
-
-  ```sh
-  git clone https://github.com/sgxgsx/BlueToolkit --recurse-submodules
-  chmod +x ./BlueToolkit/install.sh
-  sudo ./BlueToolkit/install.sh
-  ```
-
-</details>
-<details>
-  <summary>Windows and MacOS Installation</summary>
-  You could try to install the toolkit on WSL or MacOS directly. 
-  Alternatively, use the VM installation option.
-</details>
 
 
 
-### Specific Module Install
-
-<details>
-  <summary>Virtual Machine</summary>
-  
-  * Verify that the hardware is connected to the machine
-  * Verify that you allowed the hardware to be shown to the VM in the USB settings
-  * Then depending on the hardware that you need to install do the following:
-  
-  ```sh
-  vagrant ssh
-  cd /usr/share/BlueToolkit/installation/
-  ls -al
-  ```
-  
-  * Find a script for your hardware and execute it
-  ```sh
-  ./{HARDWARE}_installation.sh
-  ```
-
-</details>
-
-<details>
-  <summary>Linux</summary>
-  
-  * Verify that the hardware is connected to the machine
-  * Then depending on the hardware that you need to install do the following:
-  
-  ```sh
-  cd /usr/share/BlueToolkit/installation/
-  ls -la
-  ```
-  
-  *  Then find a script for your hardware and execute it
-  ```sh
-  ./{HARDWARE}_installation.sh
-  ```
-</details>
 
 
 
 
 ### Usage
 
-```sh
-sudo bluekit -h
-```
-
-This will display help information for the tool. Here are all the parameters it supports.
+Run `bluekit -h` to display BlueToolkit usage information:
 
 
 ```console
@@ -166,25 +118,23 @@ options:
   -rej, --reportjson    Create a report for a target device
   -hh HARDWARE [HARDWARE ...], --hardware HARDWARE [HARDWARE ...]
                         Scan only for provided exploits based on hardware --hardware hardware1 hardware2; --exclude and --exploit are not taken into account
-
-EXAMPLES:
-Run bluekit recon:
-   $ sudo bluekit -t AA:BB:CC:DD:EE:FF -r
-
-Run bluekit connectivity check:
-   $ sudo bluekit -t AA:BB:CC:DD:EE:FF -ct
-
-Run bluekit with a specific exploit:
-   $ sudo bluekit -t AA:BB:CC:DD:EE:FF -e invalid_max_slot
-
-Run bluekit with specific exploits:
-   $ sudo bluekit -t AA:BB:CC:DD:EE:FF -e invalid_max_slot au_rand_flooding internalblue_knob
-
-Run bluekit and list all available exploits:
-   $ sudo bluekit -l
-
-Documentation is available at: https://github.com/sgxgsx/BlueToolkit/wiki
 ```
+
+Some usage examples are:
+- List all available exploits (no root required): 
+    
+  `bluekit -l`
+- Run recon: 
+
+  `sudo bluekit -t AA:BB:CC:DD:EE:FF -r`
+- Test connectivity: 
+
+  `sudo bluekit -t AA:BB:CC:DD:EE:FF -ct`
+- Test one or more exploits (space separated): 
+
+  `sudo bluekit -t AA:BB:CC:DD:EE:FF -e invalid_max_slot au_rand_flooding internalblue_knob`
+
+More documentation is available in [our wiki](https://github.com/sgxgsx/BlueToolkit/wiki)
 
 
 # Available Bluetooth Vulnerabilities and Attacks
@@ -270,9 +220,7 @@ These attacks a novel/new and are tested by the framework
 ## TODO List
 
 - [ ] **Add Support for BLE (Bluetooth Low Energy)**  
-  - Implement BLE functionality to enhance the project's connectivity capabilities. 
-- [ ] **Resolve Python Version Compatibility**  
-  - Investigate porting or adapting the recoinnassance part done by bluing to work seamlessly with the most recent Python 3 version.  
+  - Implement BLE functionality to enhance the project's connectivity capabilities.  
 - [ ] **Continuously (Re-)Develop Proofs of Concept (PoCs)**  
   - Develop new PoCs to explore additional use cases or features.  
 
