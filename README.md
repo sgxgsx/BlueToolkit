@@ -1,4 +1,4 @@
-# BlueToolkit
+<!-- # BlueToolkit -->
 
 <h1 align="center">
   <img src="/static/bluetoolkit.png" width="300px" alt="BlueToolkit">
@@ -23,21 +23,24 @@
 
 ---
 
-BlueToolkit is an extensible Bluetooth Classic vulnerability testing framework that helps uncover new and old vulnerabilities in Bluetooth-enabled devices. 
+BlueToolkit is a modular, black-box Bluetooth security testing framework for Bluetooth Classic (BR/EDR). It supports semi-automated testing throuh three main phases/components:
 
-It works by executing templated exploits one by one and verifying appropriate properties based on the template logic. The toolkit is extensible and allows new research to be added to the centralized testing toolkit. 
-There are 43 Bluetooth exploits available in the toolkit, from known public exploits and tools to custom-developed ones. 
+- Reconnaissance: gathers Bluetooth capabilities and security configurations.
+- Exploitation: executes tests for (currently) 43 public exploits (MitM, RCE, DoS, etc.). The vulnerability templates are in the [exploits folder](https://github.com/sgxgsx/BlueToolkit/tree/development/exploits). Support for more can be added by TODO.
+- Reporting: generates structured, machine- and human-readable JSON reports.
 
-The framework works in a Black-box fashion, but it is also possible to operate the toolkit in a Gray-box fashion. For that one needs to extend the framework and connect it to the Operating System of the target so that it would be possible to observe Bluetooth logs and guarantee no false positives. 
-
-Also, we have already used our framework and were able to find [64 new vulnerabilities](#results) in 22 cars (Audi, BMW, Chevrolet, Honda, Hyundai, Mercedes-Benz, Mini, Opel, Polestar, Renault, Skoda, Toyota, VW, Tesla).
-
-We have a [dedicated repository](https://github.com/sgxgsx) that provides various types of vulnerability templates. 
-
-In addition to that, you can use MAP Account hijack attack to [elevate privileges](https://github.com/sgxgsx/mapAccountHijack) for the already established connections or as a chain in MitM and DoS attacks.
+<!-- TODO: talk about extensibility -->
 
 
-# Install BlueToolkit
+<!-- The framework works in a Black-box fashion, but it is also possible to operate the toolkit in a Gray-box fashion. For that one needs to extend the framework and connect it to the Operating System of the target so that it would be possible to observe Bluetooth logs and guarantee no false positives.  -->
+
+We evaluated BlueToolkit on 22 cars from different vendors (Audi, BMW, Chevrolet, Honda, Hyundai, Mercedes-Benz, Mini, Opel, Polestar, Renault, Skoda, Toyota, VW, Tesla) and uncovered [128 vulnerabilities](#results). 
+
+
+In addition, we show how to Hijack online accounts via  [MAP](https://github.com/sgxgsx/mapAccountHijack) for the already established connections or as a chain in MitM and DoS attacks.
+
+
+# Installation
 
 BlueToolkit has 2 installation stages: general and specific module installation.
 The general installation downloads the code, modules and tools available in the toolkit and tries to set up modules that do not require human interaction. The specific module installation requires a human to verify that the needed hardware is connected to the device on which the toolkit is being installed. 

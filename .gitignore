@@ -5,6 +5,7 @@ pybtool
 **/*.egg-info/
 **/**/__pycache__/
 **/*.pyc
+**/build
 
 
 
