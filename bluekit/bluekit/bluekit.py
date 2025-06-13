@@ -288,6 +288,11 @@ class BlueKit:
 
         exploits = [exploit for exploit in exploits if exploit.mass_testing]
 
+        if bt_type is not None:
+            logging.info(f"Target Bluetooth type: {bt_type}")
+            exploits = [exploit for exploit in exploits if exploit.bt_type == bt_type]
+            logging.info(f"Only {len(exploits)} exploits can be used")
+
         if version is not None:
             logging.info(f"Target Bluetooth version: {version}")
             exploits = [
