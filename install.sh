@@ -66,23 +66,20 @@ python3 -m pip install tabulate colorama
 # Install pybluez
 python3 -m pip install git+https://github.com/pybluez/pybluez.git#egg=pybluez #--break-system-packages
 
-# installing bluekit and pybtool (scanninf + BLE stuff)
-
-pip install git+https://github.com/sacca97/pybtool.git
 
 
 if [ "$DEV_MODE" = true ]; then
     # In dev mode we clone bluekit and install it in editable mode
     echo "Installing bluekit in development mode..."
-    git submodule update --init --recursive
-    cd $PWD/BlueToolkit/bluekit/
-    git checkout development
-    git pull origin development
+
+    git clone https://github.com/sacca97/pybtool.git $PWD/BlueToolkit/pybtool
+    pip install -e $PWD/BlueToolkit/pybtool
+
     pip install -e $PWD/BlueToolkit/bluekit/
 else
     # In normal mode we install bluekit from github directly
     echo "Installing bluekit..."
-    pip install git+https://github.com/sgxgsx/bluekit.git@development
+    pip install $PWD/BlueToolkit/bluekit/
 fi
 
 ## Installing tools in modules
