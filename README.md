@@ -34,7 +34,7 @@ BlueToolkit is a modular, black-box Bluetooth security testing framework for Blu
 
 <!-- The framework works in a Black-box fashion, but it is also possible to operate the toolkit in a Gray-box fashion. For that one needs to extend the framework and connect it to the Operating System of the target so that it would be possible to observe Bluetooth logs and guarantee no false positives.  -->
 
-We evaluated BlueToolkit on 22 cars from different vendors (Audi, BMW, Chevrolet, Honda, Hyundai, Mercedes-Benz, Mini, Opel, Polestar, Renault, Skoda, Toyota, VW, Tesla) and uncovered [128 vulnerabilities](#results). 
+We evaluated BlueToolkit on 22 cars from different vendors (Audi, BMW, Chevrolet, Honda, Hyundai, Mercedes-Benz, Mini, Opel, Polestar, Renault, Skoda, Toyota, VW, Tesla) and uncovered [128 vulnerabilities](https://github.com/sgxgsx/BlueToolkit/tree/development/evaluation/README.md). 
 
 
 In addition, we show how to [Hijack online accounts via MAP](https://github.com/sgxgsx/mapAccountHijack) for already established connections or with a MitM position.
