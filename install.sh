@@ -177,3 +177,63 @@ perl -i -p0e 's/class L2CAP_ConfResp.*?fields_desc.*?\].*?\]/class L2CAP_ConfRes
 
 # Enforce user permissions for all files
 chown -R $SUDO_USER:$SUDO_USER /usr/share/BlueToolkit
+
+# Optional installation of Bluetooth Assistant
+while true; do
+    read -p "Do you want to install the Bluetooth Assistant apk? It requires a connected android phone with usb debug. (yes/no) [no]: " user_response
+    user_response=$(echo "$user_response" | tr '[:upper:]' '[:lower:]') # Convert to lowercase
+
+    case "$user_response" in
+        y|yes)
+            echo "Installing Bluetooth Assistant..."
+            # should call adb to install an apk on the Nexus 5 phone or another one 
+            /usr/share/BlueToolkit/modules/BluetoothAssistant/install.sh
+            echo "Done."
+          break 
+            ;;
+        n|no|"") # Default to 'no' if user says no or presses Enter
+            echo "Skipping installation of Bluetooth Assistant."
+            break # Exit the loop
+            ;;
+        *)
+            echo "Invalid input. Please enter 'yes', 'no', or just press Enter for 'no'."
+            ;;
+    esac
+done
+
+
+# Optional braktooth installation
+while true; do
+  read -p "Do you want to install Braktooth? It requires the ESP32 board to be connected. (yes/no) [no]: " user_response
+  user_response=$(echo "$user_response" | tr '[:upper:]' '[:lower:]') # Convert to lowercase
+  case "$user_response" in
+    y|yes)
+      echo "Installing Braktooth"
+      # Requirements
+      apt-get install libpulse0 qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools libc-ares-dev 
+      wget https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+      sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
+      rm -f libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
+
+      # ESP firmware
+      python3 $TOOLS_DIR/braktooth/release/firmware.py flash /dev/ttyUSB1
+
+      tar -I zstd -xf $TOOLS_DIR/braktooth/wdissector.tar.zst -C $TOOLS_DIR/braktooth/
+      cat $TOOLS_DIR/braktooth/requirements.sh | sed -e 's/qt5-default//' > $TOOLS_DIR/braktooth/requirements2.sh
+      chmod +x $TOOLS_DIR/braktooth/requirements2.sh
+      $TOOLS_DIR/braktooth/requirements2.sh
+
+      
+      echo "Done."
+    break 
+      ;;
+    n|no|"") # Default to 'no' if user says no or presses Enter
+      echo "Skipping installation of Braktooth."
+      break # Exit the loop
+      ;;
+    *)
+      echo "Invalid input. Please enter 'yes', 'no', or just press Enter for 'no'."
+      ;;
+  esac
+done
+
