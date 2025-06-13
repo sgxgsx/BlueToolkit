@@ -25,8 +25,7 @@ logging.basicConfig(filename=LOG_FILE, level=logging.INFO)
 
 
 class Recon:
-    def __init__(self, mode: str = "classic"):
-        self.mode = mode
+    # def __init__(self):
 
     def check_target(self, target: str):
         status = check_device_status(target)
@@ -71,13 +70,7 @@ class Recon:
         - LMP features
         - Pairing features (i.e., I/O capabilities)
         """
-        if dev is None and self.mode == "classic":
-            dev = Device()
-        elif dev is None and self.mode == "le":
-            # device = BcDevice()
-            logging.error("LE recon not implemented yet")
-            return False
-
+        dev = Device()
         dev.power_on()
         #     device.power_off()
         # # Initialize the device, default dev ID is 0
@@ -87,12 +80,12 @@ class Recon:
         start_time = time.time()
         while not complete:
             # Check if dev is advertising
-            res[f"type"] = dev.scan(timeout=5, target=target)
-            if res[f"type"] is not None:
-                res[f"advertising"] = True
+            res["type"] = dev.scan(timeout=5, target=target)
+            if res["type"] is not None:
+                res["advertising"] = True
             # Check if dev is connectable, default expect random address
             if dev.connect(target):
-                res[f"connectable"] = True
+                res["connectable"] = True
                 # Tries to get the version and vendor
                 res["version"], res["vendor"] = dev.get_remote_version()
                 logging.info("Recon.py -> got version and vendor")
@@ -100,13 +93,13 @@ class Recon:
                 # Tries to get the ll/lmp remote features
                 features = dev.get_remote_features()
                 print("Recon.py -> got remote features")
-                if self.mode == "classic":
+                if res["type"] == "BREDR":
                     res["lmp_features"] = features
                 else:
                     res["ll_features"] = features
 
                 # Tries to get the pairing features (TODO: decode the value)
-                res[f"pairable"], res[f"pairing_features"] = dev.pair()
+                res["pairable"], res["pairing_features"] = dev.pair()
                 logging.info("Recon.py -> got pairing features")
 
                 dev.disconnect()
@@ -176,7 +169,7 @@ class Recon:
                 logging.error("Device data not available")
                 return None
 
-        return data["lmp_features"] if self.mode == "classic" else data["ll_features"]
+        return data["lmp_features"] if data["type"] == "BREDR" else data["ll_features"]
 
 
 def load_recon_data_full(target: str):

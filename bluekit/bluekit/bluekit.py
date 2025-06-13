@@ -120,6 +120,7 @@ class BlueKit:
             "Available",
             "BT min",
             "BT max",
+            "BT Type",
         ]
         table_data = []
         index = 1
@@ -136,6 +137,7 @@ class BlueKit:
                     f"{symbol}",
                     f"{exploit.bt_version_min}",
                     f"{exploit.bt_version_max}",
+                    f"{exploit.bt_type}",
                 ]
             )
             index += 1
@@ -249,7 +251,7 @@ class BlueKit:
         if version is None:
             print("Recon data not found. Running recon...")
             self.recon.run_recon(target)
-            vendor, version, type = load_recon_data(target)
+            vendor, version, bt_type = load_recon_data(target)
             if version is None:
                 print(
                     "Recon failed to get device information. Please ensure the device is available and try again."
