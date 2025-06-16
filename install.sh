@@ -84,7 +84,7 @@ if [ "$ALREADY_INSTALLED" = false ]; then
       git clone https://github.com/sacca97/pybtool.git $PWD/BlueToolkit/pybtool
       pip install -e $PWD/BlueToolkit/pybtool
 
-      pip install -e $PWD/BlueToolkit/bluekit/
+      pip install -e $PWD/BlueToolkit/bluekit/ --no-deps
   else
       # In normal mode we install bluekit from github directly
       echo "Installing bluekit..."
