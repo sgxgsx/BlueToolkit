@@ -6,6 +6,13 @@ import logging
 import time
 import signal
 from pybtool.device import Device
+from pybtool.constants import (
+    BLE_ROLE_CENTRAL,
+    BLE_ROLE_PERIPHERAL,
+    BT_MODE_BLE,
+    BT_MODE_BREDR,
+)
+
 
 from pathlib import Path
 from bluekit.verifyconn import check_device_status
@@ -17,6 +24,7 @@ from bluekit.constants import (
     OUTPUT_DIRECTORY,
 )
 from bluekit.constants import LOG_FILE, REGEX_BT_MANUFACTURER
+from pybtool.pybtool.constants import BT_MODE_DUAL
 
 COMMANDS = [HCITOOL_INFO, SDPTOOL_INFO, BLUING_BR_SDP]
 invaisive_commands = [HCITOOL_INFO]
@@ -70,7 +78,7 @@ class Recon:
         - LMP features
         - Pairing features (i.e., I/O capabilities)
         """
-        dev = Device()
+        dev = Device(role=BLE_ROLE_CENTRAL, bt_mode=BT_MODE_DUAL)
         dev.power_on()
         #     device.power_off()
         # # Initialize the device, default dev ID is 0
@@ -84,7 +92,9 @@ class Recon:
             if res["type"] is not None:
                 res["advertising"] = True
             # Check if dev is connectable, default expect random address
-            if dev.connect(target):
+            if dev.connect(
+                target, bt_type=BT_MODE_BLE if res["type"] == "BLE" else BT_MODE_BREDR
+            ):
                 res["connectable"] = True
                 # Tries to get the version and vendor
                 res["version"], res["vendor"] = dev.get_remote_version()

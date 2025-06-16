@@ -20,6 +20,13 @@ from bluekit.constants import (
 )
 from bluekit.constants import OUTPUT_DIRECTORY
 from pybtool.device import Device
+from pybtool.constants import (
+    BLE_ROLE_CENTRAL,
+    BLE_ROLE_PERIPHERAL,
+    BT_MODE_BLE,
+    BT_MODE_BREDR,
+    BT_MODE_DUAL,
+)
 
 RETVAL_TARGET_NOT_AVAILABLE = 0
 RETVAL_TARGET_CONN_ONLY = 1
@@ -42,7 +49,8 @@ def check_device_status(target: str) -> int:
             5: Found, connectable, pairable
     """
     # Initialize the device, default dev ID is 0
-    dev = Device()
+    dev = Device(role=BLE_ROLE_CENTRAL, bt_mode=BT_MODE_DUAL)
+
     dev.power_on()
 
     scan_success = dev.scan(target=target)

@@ -26,6 +26,7 @@ from bluekit.setupverfication.setupverification import SetupVerifier
 from bluekit.recon import Recon, COMMANDS, load_recon_data
 from bluekit.report import Report
 
+
 class BlueKit:
     def __init__(self) -> None:
         signal.signal(signal.SIGINT, self.bluekit_signal_handler)
@@ -244,7 +245,7 @@ class BlueKit:
 
     def exploit_filter(self, target, exploits) -> list:
         # Check if recon files exist by attempting to get version
-        vendor, version, type = load_recon_data(target)
+        vendor, version, bt_type = load_recon_data(target)
         # version = self.recon.determine_bluetooth_version(target)
 
         # If version is None, it means recon files don't exist - run recon
@@ -289,9 +290,9 @@ class BlueKit:
         exploits = [exploit for exploit in exploits if exploit.mass_testing]
 
         if bt_type is not None:
-            logging.info(f"Target Bluetooth type: {bt_type}")
             exploits = [exploit for exploit in exploits if exploit.bt_type == bt_type]
             logging.info(f"Only {len(exploits)} exploits can be used")
+            version = None if float(version) == 0.0 else version
 
         if version is not None:
             logging.info(f"Target Bluetooth version: {version}")
@@ -392,9 +393,7 @@ def main():
         action="store_true",
         help="Start from a checkpoint",
     )
-    parser.add_argument(
-        "-d", "--debug", required=False, type=str, help="Debug level"
-    )
+    parser.add_argument("-d", "--debug", required=False, type=str, help="Debug level")
     parser.add_argument(
         "-ex",
         "--excludeexploits",
