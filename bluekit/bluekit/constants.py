@@ -1,6 +1,4 @@
 import os
-from pathlib import Path
-
 
 BRAKTOOTH_HOME = (
     "/home/weil/Desktop/University/Thesis/toolkit/modules/tools/braktooth/wdissector"
@@ -11,27 +9,20 @@ BRAKTOOTH_GET_EXPLOITS = "./bin/bt_exploiter --list-exploits"
 BRAKTOOTH_GENERIC_EXPLOIT = "./bin/bt_exploiter --host-port=/dev/ttyUSB1 --target={target} --exploit={exploit} --random_bdaddress"
 
 
-RETURN_CODE_ERROR = 0
-RETURN_CODE_NOT_VULNERABLE = 1
-RETURN_CODE_VULNERABLE = 2
-RETURN_CODE_UNDEFINED = 3
-RETURN_CODE_NONE_OF_4_STATE_OBSERVED = 4
-RETURN_CODE_NOT_TESTED = 5
+class ReturnCode:
+    ERROR = 0
+    NOT_VULNERABLE = 1
+    VULNERABLE = 2
+    UNDEFINED = 3
+    UNKNOWN_STATE = 4
+    NOT_TESTED = 5
 
 
-TYPE_DOS = "DoS"
-TYPE_POC = "PoC"
-TYPE_MANUAL = "Manual"
-
-
-#### Directories
-
-
-# TOOLKIT_INSTALLATION_DIRECTORY = '/home/weil/Desktop/University/Thesis/toolkit'       # change during installation
-# location = open("/usr/share/BlueToolkit/.installation_directory.conf").read().strip()
-# TOOLKIT_BLUEEXPLOITER_INSTALLATION_DIRECTORY = TOOLKIT_INSTALLATION_DIRECTORY + '/bluekit'
-# CHECKPOINT_PATH = '/home/weil/Desktop/University/Thesis/data/tests/{target}/.braktooth_checkpoint_{target}.json'
-# OUTPUT_DIRECTORY = '/home/weil/Desktop/University/Thesis/data/tests/{target}/{exploit}/'
+class ExploitType:
+    RECON = "Recon"
+    DOS = "DoS"
+    POC = "PoC"
+    MANUAL = "Manual"
 
 
 TOOLKIT_INSTALLATION_DIRECTORY = "/usr/share/BlueToolkit"
@@ -67,21 +58,7 @@ DOS_TEST_DATA_RETURN = "Down - {} , Unpairable - {}"
 DEFAULT_CONNECTOR = " "
 
 
-COMMAND_INFO = "hcitool info {target}"
-COMMAND_CONNECT = (
-    TOOLKIT_BLUEEXPLOITER_INSTALLATION_DIRECTORY + "/bluekit/reconnect.sh {target}"
-)
-REGEX_COMMAND_CONNECT = "Device {target} Connected: yes"
-
-
-HCITOOL_INFO = ("hcitool info {target}", "hciinfo.log")
 SDPTOOL_INFO = ("sdptool browse {target}", "sdpinfo.log")
-BLUING_BR_SDP = ("bluing br --sdp {target}", "bluing_sdp.log")
-BLUING_BR_LMP = ("bluing br --lmp-features {target}", "bluing_lmp.log")
-REGEX_BT_VERSION = "Bluetooth Core Specification [0-9]{1}(\.){0,1}[0-9]{0,1}\ "
-REGEX_BT_VERSION_HCITOOL = "\(0x[0-f]{1}\) LMP Subversion:"
-REGEX_BT_MANUFACTURER = "Manufacturer name: .*\n"
-
 
 REGEX_EXPLOIT_OUTPUT_DATA = b"BLUEEXPLOITER DATA:.*\n"
 REGEX_EXPLOIT_OUTPUT_DATA_CODE = b" code=[0-4],"

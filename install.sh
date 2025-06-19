@@ -41,7 +41,7 @@ if [ "$ALREADY_INSTALLED" = false ]; then
   # PulseAudio Bluetooth module
   apt-get install -y pulseaudio-module-bluetooth
   # Development, system utilities and Python dependencies
-  apt-get install -y zstd unzip git rfkill meson patchelf ubertooth adb python3-cairo-dev libcairo2-dev libgirepository1.0-dev libdbus-1-dev bluez-hcidump bluez-tools xterm
+  apt-get install -y zstd unzip git rfkill meson patchelf ubertooth adb python3-cairo-dev libcairo2-dev libgirepository1.0-dev libdbus-1-dev bluez-tools xterm
   # System libraries
   apt-get install -y libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev zlib1g-dev libncurses5-dev libnss3-dev libreadline-dev libffi-dev wget
   # ARM and Android tools

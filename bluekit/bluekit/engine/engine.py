@@ -18,16 +18,9 @@ from bluekit.constants import (
     OUTPUT_DIRECTORY,
     DEFAULT_CONNECTOR,
     TOOLKIT_INSTALLATION_DIRECTORY,
-    TYPE_DOS,
     REGEX_EXPLOIT_OUTPUT_DATA,
 )
-from bluekit.constants import (
-    RETURN_CODE_ERROR,
-    RETURN_CODE_UNDEFINED,
-    RETURN_CODE_NONE_OF_4_STATE_OBSERVED,
-    RETURN_CODE_NOT_VULNERABLE,
-    RETURN_CODE_VULNERABLE,
-)
+from bluekit.constants import ReturnCode, ExploitType
 from bluekit.constants import (
     REGEX_EXPLOIT_OUTPUT_DATA_DATA,
     REGEX_EXPLOIT_OUTPUT_DATA_CODE,
@@ -176,8 +169,8 @@ class Engine:
                 timeout=current_exploit.max_timeout,
             )
 
-        if current_exploit.type == TYPE_DOS:
-            # Possible to add a gray-box check here!!!!
+        if current_exploit.type == ExploitType.DOS:
+            # TODO: possible gray-box check here if we have access to the target device
             response_code, data = dos_checker(target)
         else:
             logging.info("Engine.run_test -> data " + str(data))
@@ -341,7 +334,7 @@ class Engine:
                 + str(e)
             )
             return (
-                RETURN_CODE_NONE_OF_4_STATE_OBSERVED,
+                ReturnCode.UNKNOWN_STATE,
                 "Error during extracting information from the regex",
             )
 

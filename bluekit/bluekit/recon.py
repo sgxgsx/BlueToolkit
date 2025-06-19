@@ -18,16 +18,11 @@ from pathlib import Path
 from bluekit.verifyconn import check_device_status
 
 from bluekit.constants import (
-    HCITOOL_INFO,
-    SDPTOOL_INFO,
-    BLUING_BR_SDP,
     OUTPUT_DIRECTORY,
 )
-from bluekit.constants import LOG_FILE, REGEX_BT_MANUFACTURER
-from pybtool.pybtool.constants import BT_MODE_DUAL
+from bluekit.constants import LOG_FILE
+from pybtool.constants import BT_MODE_DUAL
 
-COMMANDS = [HCITOOL_INFO, SDPTOOL_INFO, BLUING_BR_SDP]
-invaisive_commands = [HCITOOL_INFO]
 
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO)
 
@@ -91,10 +86,13 @@ class Recon:
             res["type"] = dev.scan(timeout=5, target=target)
             if res["type"] is not None:
                 res["advertising"] = True
+            print(f"Recon.py -> found device type: {res['type']}")
             # Check if dev is connectable, default expect random address
             if dev.connect(
                 target, bt_type=BT_MODE_BLE if res["type"] == "BLE" else BT_MODE_BREDR
             ):
+                print("Connected")
+
                 res["connectable"] = True
                 # Tries to get the version and vendor
                 res["version"], res["vendor"] = dev.get_remote_version()
@@ -135,30 +133,6 @@ class Recon:
 
         return complete
 
-    # TODO: remove dependenci from hcidump
-    def start_hcidump(self):
-        logging.info("Starting hcidump -X...")
-        process = subprocess.Popen(
-            ["hcidump", "-X"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        return process
-
-    def stop_hcidump(self, process):
-        logging.info("Stopping hcidump -X...")
-        process.send_signal(subprocess.signal.SIGINT)
-        output, _ = process.communicate()
-        logging.info("hcidump -> " + str(output.decode()))
-        logging.info("hcidump -X stopped.")
-        return output
-
-    def get_hcidump(self, target):
-        hcidump_process = self.start_hcidump()
-        try:
-            time.sleep(1)
-            check_device_status(target=target)
-        finally:
-            return self.stop_hcidump(hcidump_process).decode().split("\n")
-
     def get_capabilities(self, target):
         data = load_recon_data_full(target)
         if data is None:
@@ -196,41 +170,3 @@ def load_recon_data(target: str):
     if data is None:
         return None, None, None
     return data["vendor"], data["version"], data["type"]
-
-
-# def get_capabilities(self, target):
-#     output = self.get_hcidump(target)
-#     # Our capability is set as NoInputNoOutput so the other one should be a target device capability
-#     capabilities = set()
-#     numb_of_capabilities = 0
-#     for line in output:
-#         if line.strip().startswith("Capability:"):
-#             capabilities.add(line.strip().split(" ")[1])
-#             numb_of_capabilities += 1
-#     logging.info(
-#         "recon.py -> found the following capabilities " + str(capabilities)
-#     )
-#     if len(capabilities) == 0:
-#         logging.info("recon.py -> most likely legacy pairing")
-#         return None
-#     elif numb_of_capabilities == 1:
-#         logging.info("recon.py -> got only 1 capability " + str(capabilities))
-#         return capabilities.pop()
-#     capabilities.remove("NoInputNoOutput")
-#     capability = None
-#     if len(capabilities) == 0:
-#         return "NoInputNoOutput"
-#     else:
-#         return capabilities.pop()
-
-# def scan_additional_recon_data(self, target):
-#     # collect additional data - for now it's only capability
-
-#     capability = self.get_capabilities(target=target)
-
-#     log_dir = OUTPUT_DIRECTORY.format(target=target, exploit="recon")
-#     Path(log_dir).mkdir(exist_ok=True, parents=True)
-#     filename = log_dir + ADDITIONAL_RECON_DATA_FILE
-#     f = open(filename, "w")
-#     f.write(capability)
-#     f.close()

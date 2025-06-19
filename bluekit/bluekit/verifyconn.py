@@ -5,19 +5,11 @@ import os
 from pathlib import Path
 
 from bluekit.constants import (
-    COMMAND_CONNECT,
-    COMMAND_INFO,
-    REGEX_COMMAND_CONNECT,
     NUMBER_OF_DOS_TESTS,
     MAX_NUMBER_OF_DOS_TEST_TO_FAIL,
 )
-from bluekit.constants import (
-    RETURN_CODE_NOT_VULNERABLE,
-    RETURN_CODE_ERROR,
-    RETURN_CODE_NONE_OF_4_STATE_OBSERVED,
-    RETURN_CODE_UNDEFINED,
-    RETURN_CODE_VULNERABLE,
-)
+from bluekit.constants import ReturnCode
+
 from bluekit.constants import OUTPUT_DIRECTORY
 from pybtool.device import Device
 from pybtool.constants import (
@@ -77,7 +69,7 @@ def dos_checker(target: str):
             # for i in range(NUMBER_OF_DOS_TESTS):
             status = check_device_status(target)
             if status in (1, 2, 4, 5):  # Connectable and/or pairable
-                return RETURN_CODE_NOT_VULNERABLE, str(not_available)
+                return ReturnCode.NOT_VULNERABLE, str(not_available)
 
             not_available += 1
 
@@ -85,9 +77,9 @@ def dos_checker(target: str):
                 not_available > MAX_NUMBER_OF_DOS_TEST_TO_FAIL
                 or not_available > NUMBER_OF_DOS_TESTS
             ):
-                return RETURN_CODE_VULNERABLE, str(not_available)
+                return ReturnCode.VULNERABLE, str(not_available)
     except Exception as e:
-        return RETURN_CODE_ERROR, str(e)
+        return ReturnCode.ERROR, str(e)
 
 
 # if __name__ == "__main__":

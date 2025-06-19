@@ -8,13 +8,8 @@ from pathlib import Path
 import os
 
 
-from bluekit.constants import (
-    RETURN_CODE_ERROR,
-    RETURN_CODE_NONE_OF_4_STATE_OBSERVED,
-    RETURN_CODE_NOT_VULNERABLE,
-    RETURN_CODE_UNDEFINED,
-    RETURN_CODE_VULNERABLE,
-)
+from bluekit.constants import ReturnCode
+
 from bluekit.constants import (
     TARGET_DIRECTORY,
     REPORT_OUTPUT_FILE,
@@ -35,23 +30,23 @@ def report_data(code, data):
 
 
 def report_not_vulnerable(data):
-    report_data(RETURN_CODE_NOT_VULNERABLE, data)
+    report_data(ReturnCode.NOT_VULNERABLE, data)
 
 
 def report_vulnerable(data):
-    report_data(RETURN_CODE_VULNERABLE, data)
+    report_data(ReturnCode.VULNERABLE, data)
 
 
 def report_none_of_4_state_observed(data):
-    report_data(RETURN_CODE_NONE_OF_4_STATE_OBSERVED, data)
+    report_data(ReturnCode.UNKNOWN_STATE, data)
 
 
 def report_error(data):
-    report_data(RETURN_CODE_ERROR, data)
+    report_data(ReturnCode.ERROR, data)
 
 
 def report_undefined(data):
-    report_data(RETURN_CODE_UNDEFINED, data)
+    report_data(ReturnCode.UNDEFINED, data)
 
 
 class Report:
@@ -114,21 +109,18 @@ class Report:
         for exploit in sorted_done_exploits:
             code, data = self.read_data(exploit_name=exploit, target=target)
             if code is None:
-                code = RETURN_CODE_NONE_OF_4_STATE_OBSERVED
+                code = ReturnCode.UNKNOWN_STATE
                 data = "Error during loading the report"
             logging.info("data - " + str(data))
             if data is None:
                 data = "Error with data"
             symbol = ""
-            if code == RETURN_CODE_VULNERABLE:
+            if code == ReturnCode.VULNERABLE:
                 symbol = "❗"
-            elif (
-                code == RETURN_CODE_ERROR
-                or code == RETURN_CODE_NONE_OF_4_STATE_OBSERVED
-            ):
+            elif code == ReturnCode.ERROR or code == ReturnCode.UNKNOWN_STATE:
                 symbol = "⚠️"
 
-            if code == RETURN_CODE_VULNERABLE:
+            if code == ReturnCode.VULNERABLE:
                 table_data.append(
                     [
                         index,
@@ -137,7 +129,7 @@ class Report:
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
                 )
-            elif code == RETURN_CODE_NOT_VULNERABLE:
+            elif code == ReturnCode.NOT_VULNERABLE:
                 table_data.append(
                     [
                         index,
@@ -146,7 +138,7 @@ class Report:
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
                 )
-            elif code == RETURN_CODE_ERROR:
+            elif code == ReturnCode.ERROR:
                 table_data.append(
                     [
                         index,
@@ -155,7 +147,7 @@ class Report:
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
                 )
-            elif code == RETURN_CODE_UNDEFINED:
+            elif code == ReturnCode.UNDEFINED:
                 table_data.append(
                     [
                         index,
@@ -164,7 +156,7 @@ class Report:
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
                 )
-            elif code == RETURN_CODE_NONE_OF_4_STATE_OBSERVED:
+            elif code == ReturnCode.UNKNOWN_STATE:
                 table_data.append(
                     [
                         index,
@@ -247,7 +239,7 @@ class Report:
         for exploit in sorted_done_exploits:
             code, data = self.read_data(exploit_name=exploit, target=target)
             if code is None:
-                code = RETURN_CODE_NONE_OF_4_STATE_OBSERVED
+                code = ReturnCode.UNKNOWN_STATE
                 data = "Error during loading the report"
             logging.info("data - " + str(data))
             sorted_done_exploits_json.append(
@@ -297,19 +289,9 @@ class Report:
         logging.info(f"Attempting to copy report to: {dest_file}")
         try:
             shutil.copy2(source_file, dest_file)
-            # Change ownership to the original user if running with sudo
-            if "SUDO_USER" in os.environ:
-                import pwd
-
-                sudo_user = os.environ["SUDO_USER"]
-                uid = pwd.getpwnam(sudo_user).pw_uid
-                gid = pwd.getpwnam(sudo_user).pw_gid
-                os.chown(dest_file, uid, gid)
+            # Allow non-root users to read the file
+            os.chmod(dest_file, 0o664)
             logging.info(f"Successfully copied report to {dest_file}")
             print(f"Report saved to: {dest_file}")
         except Exception as e:
             logging.error(f"Error copying report to current directory: {str(e)}")
-
-
-if __name__ == "__main__":
-    pass
