@@ -18,7 +18,7 @@ from pathlib import Path
 from bluekit.verifyconn import check_device_status, print_device_status
 
 from bluekit.constants import (
-    OUTPUT_DIRECTORY,
+    OUTPUT_DIR,
 )
 from bluekit.constants import LOG_FILE
 from pybtool.constants import BT_MODE_DUAL
@@ -108,7 +108,7 @@ class Recon:
                     break
 
         if complete and save:
-            log_dir = OUTPUT_DIRECTORY.format(target=target, exploit="recon")
+            log_dir = OUTPUT_DIR.format(target=target, exploit="recon")
             Path(log_dir).mkdir(exist_ok=True, parents=True)
             try:
                 with open(f"{log_dir}recon.json", "w") as f:
@@ -146,7 +146,7 @@ class Recon:
 
 
 def load_recon_data_full(target: str):
-    file_path = OUTPUT_DIRECTORY.format(target=target, exploit="recon") + "recon.json"
+    file_path = OUTPUT_DIR.format(target=target, exploit="recon") + "recon.json"
     if not Path(file_path).exists():
         logging.error(f"Recon data file {file_path} does not exist.")
         return None

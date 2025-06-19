@@ -1,7 +1,28 @@
 import os
+from pathlib import Path
 
 # BRAKTOOTH_GET_EXPLOITS = "./bin/bt_exploiter --list-exploits"
 # BRAKTOOTH_GENERIC_EXPLOIT = "./bin/bt_exploiter --host-port=/dev/ttyUSB1 --target={target} --exploit={exploit} --random_bdaddress"
+
+
+
+TOOLKIT_INSTALL_DIR = "/usr/share/BlueToolkit"
+BLUEKIT_INSTALL_DIR = TOOLKIT_INSTALL_DIR + "/bluekit"
+LOG_FILE = TOOLKIT_INSTALL_DIR + "/.logs/bluetoolkit.log"
+
+
+TARGET_DIR = TOOLKIT_INSTALL_DIR + "/data/tests/{target}/"
+OUTPUT_DIR = TARGET_DIR + "/{exploit}/"
+REPORT_OUTPUT_FILE = OUTPUT_DIR + "output_report.json"
+FULL_REPORT_OUTPUT_FILE = TARGET_DIR / "output_report_full.json"
+
+# Target here is redundant
+CHECKPOINT_PATH = TARGET_DIR + ".checkpoint_{target}.json"
+
+
+# Exploits and hardware directories
+EXPLOIT_DIR = TOOLKIT_INSTALL_DIR + "/exploits"
+HARDWARE_DIR = TOOLKIT_INSTALL_DIR + "/hardware"
 
 
 class ReturnCode:
@@ -20,25 +41,21 @@ class ExploitType:
     MANUAL = "Manual"
 
 
-TOOLKIT_INSTALLATION_DIRECTORY = "/usr/share/BlueToolkit"
-TOOLKIT_BLUEEXPLOITER_INSTALLATION_DIRECTORY = (
-    TOOLKIT_INSTALLATION_DIRECTORY + "/bluekit"
-)
-CHECKPOINT_PATH = (
-    TOOLKIT_INSTALLATION_DIRECTORY + "/data/tests/{target}/.checkpoint_{target}.json"
-)
-OUTPUT_DIRECTORY = TOOLKIT_INSTALLATION_DIRECTORY + "/data/tests/{target}/{exploit}/"
-TARGET_DIRECTORY = TOOLKIT_INSTALLATION_DIRECTORY + "/data/tests/{target}/"
-REPORT_OUTPUT_FILE = OUTPUT_DIRECTORY + "output_report.json"
-MACHINE_READABLE_REPORT_OUTPUT_FILE = TARGET_DIRECTORY + "whole-output.json"
-LOG_FILE = TOOLKIT_INSTALLATION_DIRECTORY + "/.logs/application.log"
+# TOOLKIT_INSTALLATION_DIRECTORY = "/usr/share/BlueToolkit"
+# # checkpointers = (
+# #     TOOLKIT_INSTALLATION_DIRECTORY + "/data/tests/{target}/.checkpoint_{target}.json"
+# # )
+# OUTPUT_DIRECTORY = TOOLKIT_INSTALLATION_DIRECTORY + "/data/tests/{target}/{exploit}/"
+# TARGET_DIRECTORY = TOOLKIT_INSTALLATION_DIRECTORY + "/data/tests/{target}/"
+# REPORT_OUTPUT_FILE = OUTPUT_DIRECTORY + "output_report.json"
+# MACHINE_READABLE_REPORT_OUTPUT_FILE = TARGET_DIRECTORY + "whole-output.json"
+# LOG_FILE = TOOLKIT_INSTALLATION_DIRECTORY + "/.logs/application.log"
 
-# Exploits and hardware directories
-EXPLOIT_DIRECTORY = TOOLKIT_INSTALLATION_DIRECTORY + "/exploits"
-HARDWARE_DIRECTORY = TOOLKIT_INSTALLATION_DIRECTORY + "/hardware"
+# # Exploits and hardware directories
+# EXPLOIT_DIRECTORY = TOOLKIT_INSTALLATION_DIRECTORY + "/exploits"
+# HARDWARE_DIRECTORY = TOOLKIT_INSTALLATION_DIRECTORY + "/hardware"
 
 
-CURRENT_DIRECTORY = os.getcwd()
 ADDITIONAL_RECON_DATA_FILE = "additional_data.log"
 SKIP_DIRECTORIES = ["recon"]  # skip these directories when getting exploit names
 
@@ -53,7 +70,6 @@ class ConnVerifier:
     TARGET_ADVERTISING      = 0b0100  # 4
 
 
-TIMEOUT = 40
 MAX_CHARS_DATA_TRUNCATION = 80
 DOS_TEST_DATA_RETURN = "Down - {} , Unpairable - {}"
 

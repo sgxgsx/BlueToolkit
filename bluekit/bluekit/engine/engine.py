@@ -14,10 +14,10 @@ from pathlib import Path
 
 from bluekit.models.exploit import Exploit
 from bluekit.constants import (
-    TIMEOUT,
-    OUTPUT_DIRECTORY,
+    ConnVerifier,
+    OUTPUT_DIR,
     DEFAULT_CONNECTOR,
-    TOOLKIT_INSTALLATION_DIRECTORY,
+    TOOLKIT_INSTALL_DIR,
     REGEX_EXPLOIT_OUTPUT_DATA,
 )
 from bluekit.constants import ReturnCode, ExploitType
@@ -148,7 +148,7 @@ class Engine:
         print(f"Running exploit {current_exploit.name}")
 
         if current_exploit.directory["change"]:
-            new_directory = TOOLKIT_INSTALLATION_DIRECTORY
+            new_directory = TOOLKIT_INSTALL_DIR
             if not current_exploit.directory["directory"].startswith("/"):
                 new_directory += "/"
             new_directory += current_exploit.directory["directory"]
@@ -186,7 +186,7 @@ class Engine:
         target: str,
         exploit_command: list,
         exploit_name: str,
-        timeout=TIMEOUT,
+        timeout=ConnVerifier.TIMEOUT,
         change_directory=False,
         directory=None,
     ) -> tuple:
@@ -195,7 +195,7 @@ class Engine:
             os.chdir(directory)
             logging.info("Engine.execute_command -> chdir to {}".format(directory))
         else:
-            os.chdir(TOOLKIT_INSTALLATION_DIRECTORY)
+            os.chdir(TOOLKIT_INSTALL_DIR)
 
         data = False, b""
 
@@ -237,7 +237,7 @@ class Engine:
             time.sleep(1)
 
         if change_directory:
-            os.chdir(TOOLKIT_INSTALLATION_DIRECTORY)
+            os.chdir(TOOLKIT_INSTALL_DIR)
 
         logging.info("Engine.execute_command -> data -> " + str(data))
         return data
@@ -256,7 +256,7 @@ class Engine:
             os.chdir(directory)
             logging.info("Engine.execute_command -> chdir to {}".format(directory))
         else:
-            os.chdir(TOOLKIT_INSTALLATION_DIRECTORY)
+            os.chdir(TOOLKIT_INSTALL_DIR)
 
         data = False, b""
 
@@ -293,7 +293,7 @@ class Engine:
             time.sleep(1)
 
         if change_directory:
-            os.chdir(TOOLKIT_INSTALLATION_DIRECTORY)
+            os.chdir(TOOLKIT_INSTALL_DIR)
 
         logging.info("Engine.execute_command -> data -> " + str(data))
         return data
@@ -344,7 +344,7 @@ class Engine:
             self.check_pull_location(target, current_exploit.name)
 
         if current_exploit.log_pull["from_directory"]:
-            directory = TOOLKIT_INSTALLATION_DIRECTORY
+            directory = TOOLKIT_INSTALL_DIR
             if current_exploit.log_pull["relative_directory"]:
                 pull_dir = current_exploit.log_pull["pull_directory"]
                 if not pull_dir.startswith("/"):
@@ -376,7 +376,7 @@ class Engine:
         return [parameters[i] for i in range(0, len(parameters), 2)]
 
     def check_pull_location(self, target, current_exploit_name):
-        self.pull_location = OUTPUT_DIRECTORY.format(
+        self.pull_location = OUTPUT_DIR.format(
             target=target, exploit=current_exploit_name
         )
         Path(self.pull_location).mkdir(parents=True, exist_ok=True)

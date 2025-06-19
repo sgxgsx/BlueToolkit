@@ -1,6 +1,5 @@
 import unittest
 
-from bluekit.constants import TOOLKIT_BLUEEXPLOITER_INSTALLATION_DIRECTORY
 from bluekit.bluekit import BlueKit
 from bluekit.factories.hardwarefactory import HardwareFactory
 from bluekit.factories.exploitfactory import ExploitFactory

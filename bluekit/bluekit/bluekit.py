@@ -12,10 +12,9 @@ from tabulate import tabulate
 from colorama import Fore
 
 from bluekit.constants import (
-    CURRENT_DIRECTORY,
-    TOOLKIT_INSTALLATION_DIRECTORY,
+    TOOLKIT_INSTALL_DIR,
 )
-from bluekit.constants import LOG_FILE, OUTPUT_DIRECTORY, ConnVerifier
+from bluekit.constants import LOG_FILE, OUTPUT_DIR, ConnVerifier
 from bluekit.factories.exploitfactory import ExploitFactory
 from bluekit.factories.hardwarefactory import HardwareFactory
 from bluekit.engine.engine import Engine
@@ -45,7 +44,7 @@ class BlueKit:
     def bluekit_signal_handler(self, sig, frame):
         print("Ctrl+C detected. Creating a checkpoint and exiting")
         self.preserve_state()
-        os.chdir(CURRENT_DIRECTORY)
+        os.chdir(os.getcwd())
         sys.exit()
 
     # important to initialize parameters
@@ -246,7 +245,7 @@ class BlueKit:
         else:
             # Get path to recon file for logging
             recon_file = os.path.join(
-                OUTPUT_DIRECTORY.format(target=target, exploit="recon"),
+                OUTPUT_DIR.format(target=target, exploit="recon"),
                 "recon.json",
             )
             print(f"Recon data found - {recon_file}")
@@ -450,7 +449,7 @@ def main():
 
     # Store original working directory
     original_dir = os.getcwd()
-    os.chdir(TOOLKIT_INSTALLATION_DIRECTORY)
+    os.chdir(TOOLKIT_INSTALL_DIR)
     blueExp = BlueKit()
     # Pass original directory to BlueKit
     blueExp.original_dir = original_dir
@@ -486,7 +485,7 @@ def main():
     else:
         parser.print_help()
 
-    os.chdir(CURRENT_DIRECTORY)
+    os.chdir(os.getcwd())
 
 
 if __name__ == "__main__":

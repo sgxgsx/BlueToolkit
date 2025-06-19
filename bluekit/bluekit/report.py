@@ -11,15 +11,14 @@ import os
 from bluekit.constants import ReturnCode
 
 from bluekit.constants import (
-    TARGET_DIRECTORY,
+    TARGET_DIR,
     REPORT_OUTPUT_FILE,
     SKIP_DIRECTORIES,
-    TOOLKIT_BLUEEXPLOITER_INSTALLATION_DIRECTORY,
     MAX_CHARS_DATA_TRUNCATION,
 )
 from bluekit.constants import (
-    OUTPUT_DIRECTORY,
-    MACHINE_READABLE_REPORT_OUTPUT_FILE,
+    OUTPUT_DIR,
+    FULL_REPORT_OUTPUT_FILE,
 )
 from bluekit.factories.exploitfactory import ExploitFactory
 
@@ -78,7 +77,7 @@ class Report:
         return None, None
 
     def get_done_exploits(self, target):
-        path = Path(TARGET_DIRECTORY.format(target=target))
+        path = Path(TARGET_DIR.format(target=target))
         exploits = [
             entry.name
             for entry in path.iterdir()
@@ -199,7 +198,7 @@ class Report:
 
     def get_manufacturer(self, target) -> str:
         file_path = Path(
-            OUTPUT_DIRECTORY.format(target=target, exploit="recon") + "recon.json"
+            OUTPUT_DIR.format(target=target, exploit="recon") + "recon.json"
         )
         if file_path.is_file():
             with open(file_path, "r") as f:
@@ -208,7 +207,7 @@ class Report:
 
     def get_bt_version(self, target) -> float:
         file_path = Path(
-            OUTPUT_DIRECTORY.format(target=target, exploit="recon") + "recon.json"
+            OUTPUT_DIR.format(target=target, exploit="recon") + "recon.json"
         )
         if file_path.is_file():
             with open(file_path, "r") as f:
@@ -269,7 +268,7 @@ class Report:
         output_json["year_manufactured"] = 1
 
         # Save the report in the default location
-        source_file = MACHINE_READABLE_REPORT_OUTPUT_FILE.format(target=target)
+        source_file = FULL_REPORT_OUTPUT_FILE.format(target=target)
         logging.info(f"Creating report at: {source_file}")
         jsonfile = open(source_file, "w")
         json.dump(output_json, jsonfile, indent=6)

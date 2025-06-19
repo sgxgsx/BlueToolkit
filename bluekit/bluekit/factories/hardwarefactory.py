@@ -2,12 +2,12 @@ import yaml
 from os import listdir
 from os.path import isfile, join
 
-from bluekit.constants import HARDWARE_DIRECTORY
+from bluekit.constants import HARDWARE_DIR
 from bluekit.models.hardware import Hadrware
 
 
 class HardwareFactory:
-    def __init__(self, hardware_dir: str = HARDWARE_DIRECTORY):
+    def __init__(self, hardware_dir: str = HARDWARE_DIR):
         self.hardware_dir = hardware_dir
         self.hardware = None
 

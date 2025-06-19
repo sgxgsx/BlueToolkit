@@ -1,4 +1,4 @@
-from bluekit.constants import ConnVerifier, ReturnCode, OUTPUT_DIRECTORY
+from bluekit.constants import ConnVerifier, ReturnCode
 
 from pybtool.device import Device
 from pybtool.constants import (
