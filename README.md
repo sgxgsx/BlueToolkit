@@ -5,29 +5,29 @@
 </h1>
 
 
-<h4 align="center">Extensible Bluetooth Classic vulnerability testing framework based on simple YAML DSL.</h4>
+<h4 align="center">Extensible Bluetooth vulnerability testing framework for BR/EDR and BLE.</h4>
 
       
 <p align="center">
-  <a href="https://github.com/sgxgsx/BlueToolkit/wiki">Documentation</a> •
-  <a href="#install">Install</a> •
+  <a href="https://github.com/sgxgsx/BlueToolkit/wiki">Docs</a> •
+  <a href="#install">Installation</a> •
   <a href="#usage">Usage</a> •
-  <a href="#available-bluetooth-vulnerabilities-and-attacks">Supported Exploits</a> •
-  <a href="#TODO-list">TODO list</a> •
-  <a href="#bluetooth-vulnerabilities-and-attacks">Bluetooth Classic and BLE vulnerabilities and attacks</a> •
-  <a href="https://github.com/sgxgsx/BlueToolkit/tree/development/evaluation/README.md">Results</a> •
+  <a href="#available-bluetooth-vulnerabilities-and-attacks">Exploits</a> •
   <a href="#hardware">Hardware</a> •
+  <a href="#TODO-list">TODOs </a> •
+  <a href="https://github.com/sgxgsx/BlueToolkit/tree/development/evaluation/README.md">Automotive Evaluation</a> •
+  <a href="#bluetooth-vulnerabilities-and-attacks">Bluetooth Resources</a> •
   <a href="#license">License</a> 
 </p>
 
 
 ---
 
-BlueToolkit is a modular, black-box Bluetooth security testing framework for Bluetooth Classic (BR/EDR). It supports semi-automated testing throuh three main phases/components:
+BlueToolkit is a modular, black-box Bluetooth security testing framework for Bluetooth Classic (BR/EDR) and Bluetooth Low Energy (BLE). It supports semi-automated testing and has three main modules:
 
-- Reconnaissance: gathers Bluetooth capabilities and security configurations.
-- Exploitation: executes tests for (currently) 43 public exploits (MitM, RCE, DoS, etc.). The vulnerability templates are in the [exploits folder](https://github.com/sgxgsx/BlueToolkit/tree/development/exploits). Support for more can be added by TODO.
-- Reporting: generates structured, machine- and human-readable JSON reports.
+- **Recon**: gathers Bluetooth capabilities and security configuration.
+- **Exploit**: executes tests for (currently) 43 public exploits (MitM, RCE, DoS, etc.). The vulnerability templates are in the [exploits folder](https://github.com/sgxgsx/BlueToolkit/tree/development/exploits). Support for more can be added by TODO.
+- **Report**: generates structured, machine- and human-readable JSON reports.
 
 <!-- TODO: talk about extensibility -->
 
