@@ -1,11 +1,6 @@
 import subprocess
 import logging
 
-BRAKTOOTH_CHECK_SETUP = "ls /dev/ttyUSB*"
-
-INTERNABLUE_CHECK_SETUP = "adb devices"
-INTERNABLUE_CHECK_SETUP_GET_NEXUS = "adb -s {device} shell getprop"
-
 
 class SetupVerifier:
     def verify_setup(self, hardware) -> bool:
@@ -29,7 +24,7 @@ class SetupVerifier:
         try:
             output = (
                 subprocess.check_output(
-                    BRAKTOOTH_CHECK_SETUP, shell=True, stderr=subprocess.PIPE
+                    "ls /dev/ttyUSB*", shell=True, stderr=subprocess.PIPE
                 )
                 .decode()
                 .split("\n")[:-1]
@@ -50,13 +45,13 @@ class SetupVerifier:
     def check_setup_nexus5() -> bool:
         try:
             output = subprocess.check_output(
-                INTERNABLUE_CHECK_SETUP, shell=True
+                "adb devices", shell=True
             ).decode()
             for i in output.split("\n"):
                 if "\tdevice" in i:
                     device = i.split("\t")[0]
                     output2 = subprocess.check_output(
-                        INTERNABLUE_CHECK_SETUP_GET_NEXUS.format(device=device),
+                        f"adb -s {device} shell getprop",
                         shell=True,
                         stderr=subprocess.PIPE,
                     ).decode()

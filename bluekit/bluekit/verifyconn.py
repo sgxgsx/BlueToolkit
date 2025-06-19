@@ -1,16 +1,5 @@
-import subprocess
-import argparse
-import re
-import os
-from pathlib import Path
+from bluekit.constants import ConnVerifier, ReturnCode, OUTPUT_DIRECTORY
 
-from bluekit.constants import (
-    NUMBER_OF_DOS_TESTS,
-    MAX_NUMBER_OF_DOS_TEST_TO_FAIL,
-)
-from bluekit.constants import ReturnCode
-
-from bluekit.constants import OUTPUT_DIRECTORY
 from pybtool.device import Device
 from pybtool.constants import (
     BLE_ROLE_CENTRAL,
@@ -20,86 +9,65 @@ from pybtool.constants import (
     BT_MODE_DUAL,
 )
 
-RETVAL_TARGET_NOT_AVAILABLE = 0
-RETVAL_TARGET_CONN_ONLY = 1
-RETVAL_TARGET_PAIRABLE = 2
-RETVAL_TARGET_ADV_ONLY = 3
-RETVAL_TARGET_ADV_CONN = 4
-RETVAL_TARGET_ADV_CONN_PAIRABLE = 5
 
+
+def print_device_status(status: int):
+    if status == 0:
+        return "Device not advertising and not connectable"
+    
+    parts = []
+
+    if status & ConnVerifier.TARGET_ADVERTISING:
+        parts.append("advertising")
+    else:
+        parts.append("not advertising")
+
+    if status & ConnVerifier.TARGET_CONNECTABLE:
+        parts.append("connectable")
+    else:
+        parts.append("not connectable")
+
+    if status & ConnVerifier.TARGET_PAIRABLE:
+        parts.append("pairable")
+    else:
+        parts.append("not pairable")
+
+    print("Device " + ", ".join(parts))
 
 def check_device_status(target: str) -> int:
     """
     Check the status of a Bluetooth device by scanning, connecting, and pairing.
-    Returns:
-        int:
-            0: Not found, not connectable
-            1: Not found, connectable, not pairable
-            2: Not found, connectable, pairable
-            3: Found, not connectable
-            4: Found, connectable, not pairable
-            5: Found, connectable, pairable
     """
     # Initialize the device, default dev ID is 0
     dev = Device(role=BLE_ROLE_CENTRAL, bt_mode=BT_MODE_DUAL)
-
     dev.power_on()
 
-    scan_success = dev.scan(target=target)
-    connect_success = dev.connect(target)
+    retval = ConnVerifier.TARGET_NOT_AVAILABLE
 
-    if not connect_success:
-        return 0 if not scan_success else 3
+    if dev.scan(target=target):
+        retval = ConnVerifier.TARGET_ADVERTISING
 
-    pair_success = dev.pair()
+    if dev.connect(target):
+        retval = retval | ConnVerifier.TARGET_CONNECTABLE
 
-    if not pair_success:
-        return 1 if not scan_success else 4
+    if retval & ConnVerifier.TARGET_CONNECTABLE:
+        if dev.pair():
+            retval = retval | ConnVerifier.TARGET_PAIRABLE
 
     dev.disconnect()
     dev.power_off()
 
-    return 2 if not scan_success else 5
-
+    return retval
 
 def dos_checker(target: str):
     try:
-        not_available = 0
-        while True:
-            # for i in range(NUMBER_OF_DOS_TESTS):
+        for i in range(ConnVerifier.MAX_DOS_TESTS):
             status = check_device_status(target)
-            if status in (1, 2, 4, 5):  # Connectable and/or pairable
-                return ReturnCode.NOT_VULNERABLE, str(not_available)
+            if status & ConnVerifier.TARGET_CONNECTABLE or status & ConnVerifier.TARGET_PAIRABLE:
+                return ReturnCode.NOT_VULNERABLE, str(i)
+            
+            # TODO: what if it is advertising only?
 
-            not_available += 1
-
-            if (
-                not_available > MAX_NUMBER_OF_DOS_TEST_TO_FAIL
-                or not_available > NUMBER_OF_DOS_TESTS
-            ):
-                return ReturnCode.VULNERABLE, str(not_available)
+        return ReturnCode.VULNERABLE, str(i) 
     except Exception as e:
         return ReturnCode.ERROR, str(e)
-
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument(
-#         "-t", "--target", required=False, type=str, help="target MAC address"
-#     )
-#     parser.add_argument(
-#         "-a", "--availability", required=False, type=bool, help="check availability"
-#     )
-#     parser.add_argument(
-#         "-c", "--connectivity", required=False, type=bool, help="check connectivity"
-#     )
-#     args = parser.parse_args()
-
-#     if args.target:
-#         if args.availability:
-#             check_availability(args.target)
-#         if args.connectivity:
-#             check_connectivity(args.target)
-
-#     else:
-#         parser.print_help()

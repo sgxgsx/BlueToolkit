@@ -15,7 +15,7 @@ from pybtool.constants import (
 
 
 from pathlib import Path
-from bluekit.verifyconn import check_device_status
+from bluekit.verifyconn import check_device_status, print_device_status
 
 from bluekit.constants import (
     OUTPUT_DIRECTORY,
@@ -32,18 +32,7 @@ class Recon:
 
     def check_target(self, target: str):
         status = check_device_status(target)
-        if status == 0:
-            print("Device not advertising and not connectable")
-        elif status == 1:
-            print("Device not advertising, connectable but not pairable")
-        elif status == 2:
-            print("Device not advertising, connectable and pairable")
-        elif status == 3:
-            print("Device advertising but not connectable")
-        elif status == 4:
-            print("Device advertising and connectable but not pairable")
-        elif status == 5:
-            print("Device advertising, connectable and pairable")
+        print_device_status(status)
 
     def run_command(self, target, command, filename):
         print(f"Running command -> {command}")

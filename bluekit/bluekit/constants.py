@@ -1,12 +1,7 @@
 import os
 
-BRAKTOOTH_HOME = (
-    "/home/weil/Desktop/University/Thesis/toolkit/modules/tools/braktooth/wdissector"
-)
-BRAKTOOTH_LOG_DIR = "/home/weil/Desktop/University/Thesis/toolkit/modules/tools/braktooth/wdissector/logs/Bluetooth/"
-BRAKTOOTH_CHECK_SETUP = "ls /dev/ttyUSB*"
-BRAKTOOTH_GET_EXPLOITS = "./bin/bt_exploiter --list-exploits"
-BRAKTOOTH_GENERIC_EXPLOIT = "./bin/bt_exploiter --host-port=/dev/ttyUSB1 --target={target} --exploit={exploit} --random_bdaddress"
+# BRAKTOOTH_GET_EXPLOITS = "./bin/bt_exploiter --list-exploits"
+# BRAKTOOTH_GENERIC_EXPLOIT = "./bin/bt_exploiter --host-port=/dev/ttyUSB1 --target={target} --exploit={exploit} --random_bdaddress"
 
 
 class ReturnCode:
@@ -48,11 +43,20 @@ ADDITIONAL_RECON_DATA_FILE = "additional_data.log"
 SKIP_DIRECTORIES = ["recon"]  # skip these directories when getting exploit names
 
 
+class ConnVerifier:
+    MAX_DOS_TESTS = 5
+    TIMEOUT = 40
+
+    TARGET_NOT_AVAILABLE = 0b0000  # 0
+    TARGET_CONNECTABLE     = 0b0001  # 1
+    TARGET_PAIRABLE      = 0b0010  # 2
+    TARGET_ADVERTISING      = 0b0100  # 4
+
+
 TIMEOUT = 40
-NUMBER_OF_DOS_TESTS = 10
 MAX_CHARS_DATA_TRUNCATION = 80
-MAX_NUMBER_OF_DOS_TEST_TO_FAIL = 5  # > 30 seconds reported as vulnerable
 DOS_TEST_DATA_RETURN = "Down - {} , Unpairable - {}"
+
 
 
 DEFAULT_CONNECTOR = " "

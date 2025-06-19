@@ -15,7 +15,7 @@ from bluekit.constants import (
     CURRENT_DIRECTORY,
     TOOLKIT_INSTALLATION_DIRECTORY,
 )
-from bluekit.constants import LOG_FILE, OUTPUT_DIRECTORY
+from bluekit.constants import LOG_FILE, OUTPUT_DIRECTORY, ConnVerifier
 from bluekit.factories.exploitfactory import ExploitFactory
 from bluekit.factories.hardwarefactory import HardwareFactory
 from bluekit.engine.engine import Engine
@@ -171,26 +171,25 @@ class BlueKit:
             )
 
     def check_target(self, target):
-        cont = True
-        while cont:
-            for _ in range(10):
+        while True:
+            for _ in range(ConnVerifier.MAX_DOS_TESTS):
                 status = check_device_status(target)
-                if status in (1, 4):
-                    logging.info(
-                        "Blueexploiter.check_target -> Device does not accept pairing"
-                    )
-                elif status in (0, 3):
+                if not status & ConnVerifier.TARGET_CONNECTABLE:
                     logging.info(
                         "Blueexploiter.check_target -> Device does not accept connections"
+                    )
+                elif not status & ConnVerifier.TARGET_PAIRABLE:
+                    logging.info(
+                        "Blueexploiter.check_target -> Device does not accept pairing"
                     )
                 else:
                     return True
 
             while True:
                 cmd = input(
-                    "Device is might not be available. Do you want to try again? (Y/n):"
+                    "Device might not be available. Do you want to try again? (Y/n):"
                 )
-                if cmd.lower() == "y":
+                if cmd.lower() in ("y", "", " "):
                     logging.info("Trying to verify connectivity again")
                     break
                 elif cmd.lower() == "n":
@@ -198,20 +197,7 @@ class BlueKit:
                     self.preserve_state()
                     sys.exit()
                 else:
-                    logging.info("Invalid input. Please enter 'Y' or 'n'.")
-
-    def command_input(self) -> None:
-        command = input(
-            "The target device is not available. Try restoring the connectivity. After that enter 1 of the following commands: continue, backup:\n"
-        )
-        if command == "continue":
-            print("Trying to verify connectivity again")
-        elif command == "backup":
-            print("Backing up")
-            self.preserve_state()
-            raise SystemExit
-        else:
-            print("Didn't understand your input")
+                    logging.info("Invalid input. Please enter 'y' or 'n'.")
 
     # Start testing from a checkpoint
     def start_from_a_checkpoint(self, target) -> None:
