@@ -247,7 +247,7 @@ class Engine:
         target,
         exploit_command,
         exploit_name,
-        timeout=TIMEOUT,
+        timeout=ConnVerifier.TIMEOUT,
         change_directory=False,
         directory=None,
     ) -> tuple:

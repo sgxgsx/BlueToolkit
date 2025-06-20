@@ -122,24 +122,19 @@ class BlueKit:
             "BT Type",
         ]
         table_data = []
-        index = 1
-        for exploit in available_exploits:
-            symbol = "❌"
-            if hardware_verfied[exploit.hardware]:
-                symbol = "✅"
+        for idx, exploit in enumerate(available_exploits):
             table_data.append(
                 [
-                    f"{index}",
-                    f"{exploit.name}",
-                    f"{exploit.type}",
-                    f"{exploit.hardware}",
-                    f"{symbol}",
-                    f"{exploit.bt_version_min}",
-                    f"{exploit.bt_version_max}",
-                    f"{exploit.bt_type}",
+                    idx+1,
+                    exploit.name,
+                    exploit.type,
+                    exploit.hardware,
+                    "✅" if hardware_verfied[exploit.hardware] else "❌",
+                    exploit.bt_version_min,
+                    exploit.bt_version_max,
+                    exploit.bt_type,
                 ]
             )
-            index += 1
 
         table = tabulate(
             table_data,

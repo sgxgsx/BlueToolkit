@@ -14,7 +14,7 @@ LOG_FILE = TOOLKIT_INSTALL_DIR + "/.logs/bluetoolkit.log"
 TARGET_DIR = TOOLKIT_INSTALL_DIR + "/data/tests/{target}/"
 OUTPUT_DIR = TARGET_DIR + "/{exploit}/"
 REPORT_OUTPUT_FILE = OUTPUT_DIR + "output_report.json"
-FULL_REPORT_OUTPUT_FILE = TARGET_DIR / "output_report_full.json"
+FULL_REPORT_OUTPUT_FILE = TARGET_DIR + "output_report_full.json"
 
 # Target here is redundant
 CHECKPOINT_PATH = TARGET_DIR + ".checkpoint_{target}.json"
