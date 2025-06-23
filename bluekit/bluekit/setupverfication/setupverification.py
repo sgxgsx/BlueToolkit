@@ -1,12 +1,15 @@
 import subprocess
 import logging
+import glob
 
 
 class SetupVerifier:
+    logger = logging.getLogger(__qualname__)
+
     def verify_setup(self, hardware) -> bool:
         if hardware.needs_setup_verification:
             if hardware.name not in hardware_verfier:
-                logging.warning(f"Hardware - {hardware.name} is not registered")
+                self.logger.warning(f"Hardware - {hardware.name} is not registered")
                 return False
 
             return hardware_verfier[hardware.name]()
@@ -22,50 +25,27 @@ class SetupVerifier:
     @staticmethod
     def check_setup_esp32() -> bool:
         try:
-            output = (
-                subprocess.check_output(
-                    "ls /dev/ttyUSB*", shell=True, stderr=subprocess.PIPE
-                )
-                .decode()
-                .split("\n")[:-1]
-            )
-            if "/dev/ttyUSB0" in output and "/dev/ttyUSB1" in output:
-                print("ESP32 Setup is ready")
+            output = glob.glob("/dev/ttyUSB*")
+            if any(dev in output for dev in ["/dev/ttyUSB0", "/dev/ttyUSB1"]):
                 return True
-            logging.info(
-                "SetupVerfier -> check_setup_esp32 -> ESP32 No available ports"
-            )
+
+            SetupVerifier.logger.info("ESP32 is not connected or not available")
         except subprocess.CalledProcessError as e:
-            logging.info(
-                "SetupVerfier -> check_setup_esp32 -> Error during checking esp32 setup"
-            )
+            SetupVerifier.logger.info(f"Error checking esp32 setup {e}")
         return False
 
     @staticmethod
     def check_setup_nexus5() -> bool:
         try:
-            output = subprocess.check_output(
-                "adb devices", shell=True
-            ).decode()
-            for i in output.split("\n"):
-                if "\tdevice" in i:
-                    device = i.split("\t")[0]
-                    output2 = subprocess.check_output(
-                        f"adb -s {device} shell getprop",
-                        shell=True,
-                        stderr=subprocess.PIPE,
-                    ).decode()
-                    try:
-                        output2.index("[ro.product.model]: [Nexus 5]")
-                        print("Nexus 5 is available")
-                        return True
-                    except ValueError as e:
-                        pass
+            output = subprocess.check_output("adb devices -l", shell=True).decode()
+            if "device:hammerhead" in output:  # hammeread is the codename for Nexus 5
+                return True
+
+            SetupVerifier.logger.info("Nexus5 is not connected or not available")
+
         except subprocess.CalledProcessError as e:
-            logging.info(
-                "SetupVerfier -> check_setup_nexus5 -> Error during checking nexus5 setup"
-            )
-        logging.info("SetupVerfier -> check_setup_nexus5 -> Setup is not ready")
+            SetupVerifier.logger.info(f"Error checking nexus5 setup: {e}")
+
         return False
 
 
