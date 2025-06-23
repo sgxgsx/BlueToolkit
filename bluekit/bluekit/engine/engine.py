@@ -1,3 +1,5 @@
+import ast
+import json
 import logging
 import shutil
 import sys
@@ -42,13 +44,12 @@ class Engine:
         parameters: list,
         pull_in_command=False,
     ) -> str:
-        exploit_command = current_exploit.command.split(" ")
+        exploit_command = current_exploit.command.strip().split(" ")
 
         parameters_dict = self.process_additional_paramters(parameters)
         parameters_list = self.get_parameters_list(parameters)
 
         pull_directory_not_added = True  # default pull_directory for pull_in_command=True in case directory parameter not provided
-
         for param in current_exploit.parameters:
             if param["name"] in parameters_list:
                 self.logger.info(
@@ -188,7 +189,6 @@ class Engine:
             os.chdir(TOOLKIT_INSTALL_DIR)
 
         command = None
-
         try:
             command = subprocess.Popen(
                 exploit_command,
@@ -197,7 +197,7 @@ class Engine:
                 preexec_fn=os.setsid,
             )
 
-            self.logger.debug(f"Executing {exploit_command} with timeout {timeout}")
+            self.logger.info(f"Executing {exploit_command} with timeout {timeout}")
             stdout, stderr = command.communicate(timeout=timeout)
 
             data = True, stdout
@@ -274,29 +274,37 @@ class Engine:
     #     return data
 
     def process_raw_data(self, data, if_failed):
-        # INEFFICIENTLY processes data line by line (there is room for improvement)
+        return_code = ReturnCode.UNKNOWN_STATE
+        output_data = ""
+
         try:
             # TODO: if data is empty, return error directly
-            mm = re.compile(REGEX_EXPLOIT_OUTPUT_DATA)
-            output = mm.search(data).group()
-            self.logger.info(f"Exploit raw data 1: {output}")
+            pyobj = ast.literal_eval(data.strip().decode("utf-8"))
+            if isinstance(pyobj, dict):
+                parsed_data = json.loads(json.dumps(pyobj))
 
-            mm2 = re.compile(REGEX_EXPLOIT_OUTPUT_DATA_CODE)
-            mm3 = re.compile(REGEX_EXPLOIT_OUTPUT_DATA_DATA)
+            return_code = parsed_data.get("return_code", ReturnCode.UNKNOWN_STATE)
+            output_data = parsed_data.get("output_data", "")
 
-            output2 = int(mm2.search(output).group().rstrip(b",").split(b"=")[1])
-            self.logger.info(f"Exploit raw data 2: {output2}")
+            # print(f"Process raw data: {data}")
+            # mm = re.compile(REGEX_EXPLOIT_OUTPUT_DATA)
+            # output = mm.search(data).group()
+            # self.logger.info(f"Exploit raw data 1: {output}")
 
-            output3 = (mm3.search(output).group().split(b"=")[1]).decode()
-            self.logger.info(f"Exploit raw data 3: {output3}")
+            # mm2 = re.compile(REGEX_EXPLOIT_OUTPUT_DATA_CODE)
+            # mm3 = re.compile(REGEX_EXPLOIT_OUTPUT_DATA_DATA)
 
-            return int(output2), output3
+            # output2 = int(mm2.search(output).group().rstrip(b",").split(b"=")[1])
+            # self.logger.info(f"Exploit raw data 2: {output2}")
+
+            # output3 = (mm3.search(output).group().split(b"=")[1]).decode()
+            # self.logger.info(f"Exploit raw data 3: {output3}")
+
         except Exception as e:
-            self.logger.error(f"Error extracting information from the regex {e}")
-            return (
-                ReturnCode.UNKNOWN_STATE,
-                "Error extracting information from the regex",
-            )
+            self.logger.error(f"Error processing the raw output: {e}")
+            output_data = "Error processing the raw output"
+
+        return return_code, output_data
 
     def pull_information(self, target, current_exploit: Exploit) -> None:
         # Basically copy from 1 directory to another one

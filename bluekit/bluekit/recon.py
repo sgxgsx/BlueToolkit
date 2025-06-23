@@ -110,12 +110,12 @@ class Recon:
         return complete
 
     def get_capabilities(self, target):
+        self.logger.info(f"Getting capabilities for target {target}")
         if data := load_recon_data_full(target) is None:
             self.run_recon(target=target)
             if data := load_recon_data_full(target) is None:
                 logging.error("Device data not available")
                 return None
-
         return data["pairing_features"]["io_capabilities"]
 
     def get_remote_features(self, target):
