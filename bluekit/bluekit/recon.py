@@ -30,9 +30,7 @@ from pybtool.constants import BT_MODE_DUAL
 
 class Recon:
     def __init__(self):
-        self.logger = Logger(
-            name=self.__class__.__name__, log_level=logging.DEBUG
-        ).get()
+        self.logger = Logger(name=self.__class__.__name__, log_level=logging.INFO).get()
 
     def check_target(self, target: str):
         status = check_device_status(target)
@@ -87,7 +85,6 @@ class Recon:
                 self.logger.debug(f"run_recon -> device {target} is pairable")
 
                 dev.disconnect()
-                print(res)
                 if not any(value is None for value in res.values()):  # Success
                     complete = True
                 elif time.time() - start_time > timeout:  # Timeout
@@ -126,7 +123,7 @@ class Recon:
                 logging.error("Device data not available")
                 return None
 
-        return data["lmp_features"] if data["type"] == "BREDR" else data["ll_features"]
+        return data["lmp_ll_features"]
 
 
 def load_recon_data_full(target: str):
