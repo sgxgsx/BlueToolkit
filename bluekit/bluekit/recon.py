@@ -15,6 +15,7 @@ from pybtool.constants import (
 
 
 from pathlib import Path
+from bluekit.logger import Logger
 from bluekit.verifyconn import check_device_status, print_device_status
 
 from bluekit.constants import (
@@ -24,29 +25,18 @@ from bluekit.constants import LOG_FILE
 from pybtool.constants import BT_MODE_DUAL
 
 
-logging.basicConfig(filename=LOG_FILE, level=logging.INFO)
+# logging.basicConfig(filename=LOG_FILE, level=logging.INFO)
 
 
 class Recon:
-    # def __init__(self):
+    def __init__(self):
+        self.logger = Logger(
+            name=self.__class__.__name__, log_level=logging.DEBUG
+        ).get()
 
     def check_target(self, target: str):
         status = check_device_status(target)
         print_device_status(status)
-
-    def run_command(self, target, command, filename):
-        print(f"Running command -> {command}")
-        try:
-            output = subprocess.check_output(
-                command.format(target=target), shell=True
-            ).decode()
-            f = open(filename, "w")
-            f.write(output)
-            f.close()
-            return True
-        except subprocess.CalledProcessError:
-            # Silently fail - errors are handled at the recon level
-            return False
 
     def run_recon(
         self, target: str, dev: Device = None, save: bool = True, timeout: int = 20
@@ -64,9 +54,7 @@ class Recon:
         """
         dev = Device(role=BLE_ROLE_CENTRAL, bt_mode=BT_MODE_DUAL)
         dev.power_on()
-        #     device.power_off()
-        # # Initialize the device, default dev ID is 0
-        # device = BcDevice()
+
         res = {}
         complete = False
         start_time = time.time()
@@ -75,21 +63,20 @@ class Recon:
             res["type"] = dev.scan(timeout=5, target=target)
             if res["type"] is not None:
                 res["advertising"] = True
-            print(f"Recon.py -> found device type: {res['type']}")
+            self.logger.debug(f"run_recon -> found device type: {res['type']}")
             # Check if dev is connectable, default expect random address
             if dev.connect(
                 target, bt_type=BT_MODE_BLE if res["type"] == "BLE" else BT_MODE_BREDR
             ):
-                print("Connected")
-
                 res["connectable"] = True
+                self.logger.debug(f"run_recon -> device {target} is connected")
+
                 # Tries to get the version and vendor
                 res["version"], res["vendor"] = dev.get_remote_version()
-                logging.info("Recon.py -> got version and vendor")
 
                 # Tries to get the ll/lmp remote features
                 features = dev.get_remote_features()
-                print("Recon.py -> got remote features")
+
                 if res["type"] == "BREDR":
                     res["lmp_features"] = features
                 else:
@@ -97,14 +84,14 @@ class Recon:
 
                 # Tries to get the pairing features (TODO: decode the value)
                 res["pairable"], res["pairing_features"] = dev.pair()
-                logging.info("Recon.py -> got pairing features")
+                self.logger.debug(f"run_recon -> device {target} is pairable")
 
                 dev.disconnect()
+                print(res)
                 if not any(value is None for value in res.values()):  # Success
-                    logging.info("Recon.py -> run_recon terminated successfully")
                     complete = True
                 elif time.time() - start_time > timeout:  # Timeout
-                    logging.info("Recon.py -> run_recon timed out")
+                    logging.error("run_recon -> timeout")
                     break
 
         if complete and save:
@@ -113,32 +100,29 @@ class Recon:
             try:
                 with open(f"{log_dir}recon.json", "w") as f:
                     json.dump(res, f, indent=4)  # indent for pretty formatting
-                print(f"Recon.py -> recon data saved to {log_dir}")
+
+                self.logger.info(f"run_recon -> saving data to {log_dir}")
 
             except Exception as e:
-                logging.error(f"Error writing to {f'{log_dir}recon.json'}: {e}")
+                self.logger.error(f"Error writing to {log_dir}: {e}")
 
         dev.power_off()
 
         return complete
 
     def get_capabilities(self, target):
-        data = load_recon_data_full(target)
-        if data is None:
+        if data := load_recon_data_full(target) is None:
             self.run_recon(target=target)
-            data = load_recon_data_full(target)
-            if data is None:
+            if data := load_recon_data_full(target) is None:
                 logging.error("Device data not available")
                 return None
 
         return data["pairing_features"]["io_capabilities"]
 
     def get_remote_features(self, target):
-        data = load_recon_data_full(target)
-        if data is None:
+        if data := load_recon_data_full(target) is None:
             self.run_recon(target=target)
-            data = load_recon_data_full(target)
-            if data is None:
+            if data := load_recon_data_full(target) is None:
                 logging.error("Device data not available")
                 return None
 

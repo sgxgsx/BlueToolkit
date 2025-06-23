@@ -60,7 +60,7 @@ class Report:
         jsonfile = open(
             REPORT_OUTPUT_FILE.format(target=target, exploit=exploit_name), "w"
         )
-        json.dump(doc, jsonfile, indent=6)
+        json.dump(doc, jsonfile, indent=4)
         jsonfile.close()
 
     def read_data(self, exploit_name, target):
@@ -271,7 +271,7 @@ class Report:
         source_file = FULL_REPORT_OUTPUT_FILE.format(target=target)
         logging.info(f"Creating report at: {source_file}")
         jsonfile = open(source_file, "w")
-        json.dump(output_json, jsonfile, indent=6)
+        json.dump(output_json, jsonfile, indent=4)
         jsonfile.close()
 
         # Verify the file was created

@@ -8,6 +8,8 @@ import psutil
 import subprocess
 import signal
 
+from bluekit.logger import Logger
+
 sys.path.append("..")
 
 from pathlib import Path
@@ -30,8 +32,7 @@ from bluekit.verifyconn import dos_checker
 
 class Engine:
     def __init__(self):
-        self.logger = logging.getLogger("mylogger")
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = Logger(name=self.__class__.__name__)
         self.pull_location = None
 
     def construct_exploit_command(
@@ -173,6 +174,7 @@ class Engine:
             # TODO: possible gray-box check here if we have access to the target device
             response_code, data = dos_checker(target)
         else:
+            # TODO: modify data to optimize processing
             logging.info("Engine.run_test -> data " + str(data))
             response_code, data = self.process_raw_data(data, if_failed)
 
@@ -190,14 +192,14 @@ class Engine:
         change_directory=False,
         directory=None,
     ) -> tuple:
-        pid = None
+
         if change_directory:
             os.chdir(directory)
             logging.info("Engine.execute_command -> chdir to {}".format(directory))
         else:
             os.chdir(TOOLKIT_INSTALL_DIR)
 
-        data = False, b""
+        command = None
 
         try:
             self.logger.info(
@@ -206,35 +208,35 @@ class Engine:
                 )
             )
             command = subprocess.Popen(
-                " ".join(exploit_command),
+                exploit_command,
                 stdout=subprocess.PIPE,
-                shell=True,
+                stderr=subprocess.PIPE,
                 preexec_fn=os.setsid,
             )  # for some reason doesn't accept tokenized exploit_command (leads to a bug)
-            pid = command.pid
 
             logging.info(
                 "Engine.execute_command -> sleeping for {} seconds".format(timeout)
             )
+            stdout, stderr = command.communicate(timeout=timeout)
 
-            new_xdata = command.wait(timeout=timeout)
-            new_data = command.communicate()
             logging.info(
-                "Engine.execute_command -> command.communicate " + str(new_data)
+                f"{self.__class__.__name__}Engine.execute_command -> command.communicate " + str(stdout)
             )
-            if type(new_data) is int:
-                print(new_data)
-            else:
-                new_data = new_data[0]
-            data = True, new_data
-        except subprocess.TimeoutExpired as e:
+            data = True, stdout
+        except Exception as e:
+            logging.info(f"Engine.execute_command -> Failed to execute command: {e}")
+        # except subprocess.TimeoutExpired as e:
             logging.info(
                 "Engine.execute_command -> Killing the exploit and sleeping for another 1 second"
             )
-            for child in psutil.Process(pid).children(recursive=True):
-                child.kill()
+            # for child in psutil.Process(pid).children(recursive=True):
+            #     child.kill()
             os.killpg(os.getpgid(command.pid), signal.SIGTERM)
             time.sleep(1)
+            data = False, b""
+        
+        returncode = command.returncode if command else -1
+
 
         if change_directory:
             os.chdir(TOOLKIT_INSTALL_DIR)

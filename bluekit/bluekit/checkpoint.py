@@ -23,6 +23,9 @@ class Checkpoint:
         exploits_to_scan,
         exclude_exploits,
     ) -> None:
+        if target is None:
+            return
+        # why are we saving the whole exploit? we just need the name technically
         doc = {
             "exploits": [exploit.to_json() for exploit in exploits],
             "parameters": parameters,
@@ -33,9 +36,8 @@ class Checkpoint:
         }
         logging.debug("Checkpoint - preserve_state -> document -> " + str(doc))
         checkpoint = open(CHECKPOINT_PATH.format(target=target), "w")
-        json.dump(doc, checkpoint, indent=6)
+        json.dump(doc, checkpoint, indent=4)
         checkpoint.close()
-        return doc
 
     # Loading a checkpoint
     def load_state(self, target) -> None:
@@ -46,21 +48,28 @@ class Checkpoint:
         doc = json.load(checkpoint)
         logging.info("Checkpoint state loaded")
         logging.info(
-            "Checkpoint - load_state -> document done_exploits -> "
-            + str(doc["done_exploits"])
+            f"Checkpoint - load_state -> document done_exploits -> {doc['done_exploits']}"
         )
-        done_exploits_intermediate = [
-            exploit[0] for exploit in doc["done_exploits"]
-        ]  # get exploit names
 
-        exploits = [
-            ExploitFactory.construct_exploit(exploit) for exploit in doc["exploits"]
-        ]
+        done_exploit_names = {exploit[0] for exploit in doc["done_exploits"]}
+
         exploit_pool = [
-            exploit
-            for exploit in exploits
-            if exploit.name not in done_exploits_intermediate
+            constructed_exploit
+            for exploit_data in doc["exploits"]
+            if (constructed_exploit := ExploitFactory.construct_exploit(exploit_data)).name not in done_exploit_names
         ]
+        # done_exploits_intermediate = [
+        #     exploit[0] for exploit in doc["done_exploits"]
+        # ]  # get exploit names
+
+        # exploits = [
+        #     ExploitFactory.construct_exploit(exploit) for exploit in doc["exploits"]
+        # ]
+        # exploit_pool = [
+        #     exploit
+        #     for exploit in exploits
+        #     if exploit.name not in done_exploits_intermediate
+        # ]
 
         return (
             exploit_pool,

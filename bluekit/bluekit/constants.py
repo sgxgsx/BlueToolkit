@@ -5,13 +5,12 @@ from pathlib import Path
 # BRAKTOOTH_GENERIC_EXPLOIT = "./bin/bt_exploiter --host-port=/dev/ttyUSB1 --target={target} --exploit={exploit} --random_bdaddress"
 
 
-
 TOOLKIT_INSTALL_DIR = "/usr/share/BlueToolkit"
 BLUEKIT_INSTALL_DIR = TOOLKIT_INSTALL_DIR + "/bluekit"
 LOG_FILE = TOOLKIT_INSTALL_DIR + "/.logs/bluetoolkit.log"
 
 
-TARGET_DIR = TOOLKIT_INSTALL_DIR + "/data/tests/{target}/"
+TARGET_DIR = TOOLKIT_INSTALL_DIR + "/data/tests/{target}"
 OUTPUT_DIR = TARGET_DIR + "/{exploit}/"
 REPORT_OUTPUT_FILE = OUTPUT_DIR + "output_report.json"
 FULL_REPORT_OUTPUT_FILE = TARGET_DIR + "output_report_full.json"
@@ -65,14 +64,13 @@ class ConnVerifier:
     TIMEOUT = 40
 
     TARGET_NOT_AVAILABLE = 0b0000  # 0
-    TARGET_CONNECTABLE     = 0b0001  # 1
-    TARGET_PAIRABLE      = 0b0010  # 2
-    TARGET_ADVERTISING      = 0b0100  # 4
+    TARGET_CONNECTABLE = 0b0001  # 1
+    TARGET_PAIRABLE = 0b0010  # 2
+    TARGET_ADVERTISING = 0b0100  # 4
 
 
 MAX_CHARS_DATA_TRUNCATION = 80
 DOS_TEST_DATA_RETURN = "Down - {} , Unpairable - {}"
-
 
 
 DEFAULT_CONNECTOR = " "

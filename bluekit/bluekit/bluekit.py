@@ -11,6 +11,7 @@ from pathlib import Path
 from tabulate import tabulate
 from colorama import Fore
 
+from bluekit.logger import Logger
 from bluekit.constants import (
     TOOLKIT_INSTALL_DIR,
 )
@@ -40,6 +41,7 @@ class BlueKit:
         self.setupverifier = SetupVerifier()
         self.recon = Recon()
         self.report = Report(self)
+        self.logger = Logger(self.__class__.__name__).get()
 
     def bluekit_signal_handler(self, sig, frame):
         print("Ctrl+C detected. Creating a checkpoint and exiting")
@@ -153,10 +155,7 @@ class BlueKit:
             response_code, data = self.test_exploit(target, exploits[i], parameters)
             # done TODO add results data to done_exploits
             self.done_exploits.append([exploits[i].name, response_code, data])
-            logging.info(
-                "Blueexploiter.test_one_by_one -> done exploits - "
-                + str(self.done_exploits)
-            )
+            self.logger.info(f"test_one_by_one -> {self.done_exploits} exploits done")
             self.report.save_data(
                 exploit_name=exploits[i].name,
                 target=target,
@@ -170,11 +169,11 @@ class BlueKit:
                 status = check_device_status(target)
                 if not status & ConnVerifier.TARGET_CONNECTABLE:
                     logging.info(
-                        "Blueexploiter.check_target -> Device does not accept connections"
+                        "check_target -> Device not connectable"
                     )
                 elif not status & ConnVerifier.TARGET_PAIRABLE:
                     logging.info(
-                        "Blueexploiter.check_target -> Device does not accept pairing"
+                        "check_target -> Device not pairable"
                     )
                 else:
                     return True
@@ -187,11 +186,10 @@ class BlueKit:
                     logging.info("Trying to verify connectivity again")
                     break
                 elif cmd.lower() == "n":
-                    logging.info("Backing up")
                     self.preserve_state()
                     sys.exit()
                 else:
-                    logging.info("Invalid input. Please enter 'y' or 'n'.")
+                    print("Invalid input. Please enter 'y' or 'n'.")
 
     # Start testing from a checkpoint
     def start_from_a_checkpoint(self, target) -> None:
@@ -441,7 +439,7 @@ def main():
     logging.info("Additional parameters -> " + str(args.rest))
 
     addition_parameters = args.rest  # maybe args.rest[1:] is needed, not sure.
-
+    print(addition_parameters)
     # Store original working directory
     original_dir = os.getcwd()
     os.chdir(TOOLKIT_INSTALL_DIR)
@@ -454,6 +452,7 @@ def main():
         blueExp.check_setup()
     elif args.target:
         target = args.target.lower()
+
         if len(args.hardware) > 0:
             blueExp.set_exploits_hardware(args.hardware)
             logging.info("Provided --hardware parameter -> " + str(args.hardware))
