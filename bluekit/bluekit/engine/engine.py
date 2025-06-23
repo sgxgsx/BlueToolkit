@@ -197,8 +197,13 @@ class Engine:
                 preexec_fn=os.setsid,
             )
 
+            # TODO: these are set to DEBUG by default
             self.logger.info(f"Executing {exploit_command} with timeout {timeout}")
             stdout, stderr = command.communicate(timeout=timeout)
+
+            self.logger.info(f"Command output: {stdout.strip()}")
+            # TODO: if the stderr is not empty I want to report it in the report maybe ?
+            self.logger.info(f"Command error: {stderr}")
 
             data = True, stdout
         except Exception as e:
@@ -279,26 +284,15 @@ class Engine:
 
         try:
             # TODO: if data is empty, return error directly
-            pyobj = ast.literal_eval(data.strip().decode("utf-8"))
-            if isinstance(pyobj, dict):
-                parsed_data = json.loads(json.dumps(pyobj))
+            if not data:
+                parsed_data = {}
+            else:
+                pyobj = ast.literal_eval(data.strip().decode("utf-8"))
+                if isinstance(pyobj, dict):
+                    parsed_data = json.loads(json.dumps(pyobj))
 
             return_code = parsed_data.get("return_code", ReturnCode.UNKNOWN_STATE)
             output_data = parsed_data.get("output_data", "")
-
-            # print(f"Process raw data: {data}")
-            # mm = re.compile(REGEX_EXPLOIT_OUTPUT_DATA)
-            # output = mm.search(data).group()
-            # self.logger.info(f"Exploit raw data 1: {output}")
-
-            # mm2 = re.compile(REGEX_EXPLOIT_OUTPUT_DATA_CODE)
-            # mm3 = re.compile(REGEX_EXPLOIT_OUTPUT_DATA_DATA)
-
-            # output2 = int(mm2.search(output).group().rstrip(b",").split(b"=")[1])
-            # self.logger.info(f"Exploit raw data 2: {output2}")
-
-            # output3 = (mm3.search(output).group().split(b"=")[1]).decode()
-            # self.logger.info(f"Exploit raw data 3: {output3}")
 
         except Exception as e:
             self.logger.error(f"Error processing the raw output: {e}")
@@ -323,7 +317,7 @@ class Engine:
 
             shutil.copytree(directory, self.pull_location, dirs_exist_ok=True)
         else:
-            self.logger.info("from_directory: is not yet implemented")
+            self.logger.debug("from_directory: is not yet implemented")
             return
             raise Exception("from_directory: false, is not yet implemented")
 
