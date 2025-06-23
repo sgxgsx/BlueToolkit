@@ -54,7 +54,7 @@ class BlueKit:
     def set_parameters(self, parameters: list):
         self.parameters = parameters
 
-    def set_explude_exploits(self, exclude_exploits: list):
+    def set_exclude_exploits(self, exclude_exploits: list):
         self.exclude_exploits = exclude_exploits
 
     def set_exploits(self, exploits_to_scan: list):
@@ -235,21 +235,17 @@ class BlueKit:
             )
             self.logger.debug(f"Recon data found in {recon_file}")
 
-        self.logger.info(
-            f"start_from_cli_all -> available exploit amount - {len(exploits)}"
-        )
-        self.logger.info(
-            f"start_from_cli_all -> exploits to scan amount - {len(self.exploits_to_scan)}"
+        self.logger.debug(
+            f"There are {len(exploits)} available, of which {len(self.exploits_to_scan)} to be tested"
         )
 
         if len(self.exploits_to_scan) > 0:
-            self.logger.debug(
-                f"Filtering exploits by --exploits {self.exploits_to_scan}"
-            )
+            self.logger.debug("Filtering requested exploits (flag --exploits)")
             exploits = [
                 exploit for exploit in exploits if exploit.name in self.exploits_to_scan
             ]
         elif len(self.exclude_exploits) > 0:  # not checked if --exploits is provided
+            self.logger.debug("Filtering excluded exploits (flag --exclude-exploits)")
             exploits = [
                 exploit
                 for exploit in exploits
@@ -379,15 +375,6 @@ def main():
     )
     parser.add_argument("-d", "--debug", required=False, type=str, help="Debug level")
     parser.add_argument(
-        "-ex",
-        "--excludeexploits",
-        required=False,
-        nargs="+",
-        default=[],
-        type=str,
-        help="Exclude exploits, example --exclude exploit1, exploit2",
-    )
-    parser.add_argument(
         "-e",
         "--exploits",
         required=False,
@@ -396,6 +383,16 @@ def main():
         type=str,
         help="Scan only for provided --exploits exploit1, exploit2; --exclude is not taken into account",
     )
+    parser.add_argument(
+        "-ex",
+        "--exclude-exploits",
+        required=False,
+        nargs="+",
+        default=[],
+        type=str,
+        help="Exclude exploits, example --exclude-exploits exploit1, exploit2",
+    )
+
     parser.add_argument(
         "-r", "--recon", required=False, action="store_true", help="Run a recon script"
     )
@@ -438,7 +435,7 @@ def main():
     # logging.info(script_dir)
     distribution = pkg_resources.get_distribution("bluekit")
 
-    logging.info(f"{distribution} - {distribution.location}")
+    logging.info(f"Using {distribution}")
     # logging.info(Path(__file__))
 
     logging.debug("Additional parameters -> " + str(args.rest))
@@ -457,13 +454,15 @@ def main():
 
         if len(args.hardware) > 0:
             blueExp.set_exploits_hardware(args.hardware)
-            logging.info("Provided --hardware parameter -> " + str(args.hardware))
+            # logging.info("Provided --hardware parameter -> " + str(args.hardware))
         elif len(args.exploits) > 0:
             blueExp.set_exploits(args.exploits)
-            logging.info("Provided --exploit parameter -> " + str(args.exploits))
-        elif len(args.excludeexploits) > 0:  # scips --exclude if --exploits is provided
-            blueExp.set_explude_exploits(args.excludeexploits)
-            logging.info("Provided --exclude parameter -> " + str(args.excludeexploits))
+            # logging.info("Provided --exploit parameter -> " + str(args.exploits))
+        elif (
+            len(args.exclude_exploits) > 0
+        ):  # scips --exclude if --exploits is provided
+            blueExp.set_exclude_exploits(args.exclude_exploits)
+            # logging.info("Provided --exclude parameter -> " + str(args.excludeexploits))
 
         if args.checktarget:
             blueExp.check_target(target)
