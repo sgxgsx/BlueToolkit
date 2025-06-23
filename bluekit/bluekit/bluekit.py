@@ -41,7 +41,8 @@ class BlueKit:
         self.setupverifier = SetupVerifier()
         self.recon = Recon()
         self.report = Report(self)
-        self.logger = Logger(self.__class__.__name__).get()
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.original_dir = os.getcwd()
 
     def bluekit_signal_handler(self, sig, frame):
         print("Ctrl+C detected. Creating a checkpoint and exiting")
@@ -127,7 +128,7 @@ class BlueKit:
         for idx, exploit in enumerate(available_exploits):
             table_data.append(
                 [
-                    idx+1,
+                    idx + 1,
                     exploit.name,
                     exploit.type,
                     exploit.hardware,
@@ -155,7 +156,7 @@ class BlueKit:
             response_code, data = self.test_exploit(target, exploits[i], parameters)
             # done TODO add results data to done_exploits
             self.done_exploits.append([exploits[i].name, response_code, data])
-            self.logger.info(f"test_one_by_one -> {self.done_exploits} exploits done")
+            self.logger.debug(f"{self.done_exploits} exploits done")
             self.report.save_data(
                 exploit_name=exploits[i].name,
                 target=target,
@@ -167,23 +168,16 @@ class BlueKit:
         while True:
             for _ in range(ConnVerifier.MAX_DOS_TESTS):
                 status = check_device_status(target)
-                if not status & ConnVerifier.TARGET_CONNECTABLE:
-                    logging.info(
-                        "check_target -> Device not connectable"
-                    )
-                elif not status & ConnVerifier.TARGET_PAIRABLE:
-                    logging.info(
-                        "check_target -> Device not pairable"
-                    )
-                else:
+                if (
+                    status & ConnVerifier.TARGET_CONNECTABLE
+                    or status & ConnVerifier.TARGET_PAIRABLE
+                ):
                     return True
 
             while True:
-                cmd = input(
-                    "Device might not be available. Do you want to try again? (Y/n):"
-                )
+                cmd = input("Device not available. Do you want to try again? (Y/n):")
                 if cmd.lower() in ("y", "", " "):
-                    logging.info("Trying to verify connectivity again")
+                    self.logger.debug("Trying to verify connectivity again")
                     break
                 elif cmd.lower() == "n":
                     self.preserve_state()
@@ -202,17 +196,16 @@ class BlueKit:
 
     # Start testing from a normal call (testing all exploits)
     def start_from_cli_all(self, target, parameters) -> None:
-        logging.info(f"start_from_cli_all -> Target: {target}")
         available_exploits = self.get_available_exploits()
         exploits_with_setup = self.exploit_filter(
             target=target, exploits=self.get_exploits_with_setup()
         )
 
-        print(
-            f"There are {len(exploits_with_setup)} out of {len(available_exploits)} exploits available.\n"
+        self.logger.info(
+            f"{len(exploits_with_setup)} / {len(available_exploits)} exploits available."
         )
-        print(
-            f"Running the following exploits: {[exploit.name for exploit in exploits_with_setup]}"
+        self.logger.debug(
+            f"Running {[exploit.name for exploit in exploits_with_setup]}"
         )
 
         exploit_pool = exploits_with_setup
@@ -227,12 +220,11 @@ class BlueKit:
 
         # If version is None, it means recon files don't exist - run recon
         if version is None:
-            print("Recon data not found. Running recon...")
             self.recon.run_recon(target)
             vendor, version, bt_type = load_recon_data(target)
             if version is None:
-                print(
-                    "Recon failed to get device information. Please ensure the device is available and try again."
+                self.logger.warning(
+                    "No device information available. Ensure the device is available and try again."
                 )
                 return []
         else:
@@ -241,16 +233,19 @@ class BlueKit:
                 OUTPUT_DIR.format(target=target, exploit="recon"),
                 "recon.json",
             )
-            print(f"Recon data found - {recon_file}")
+            self.logger.debug(f"Recon data found in {recon_file}")
 
-        logging.info(
+        self.logger.info(
             f"start_from_cli_all -> available exploit amount - {len(exploits)}"
         )
-        logging.info(
+        self.logger.info(
             f"start_from_cli_all -> exploits to scan amount - {len(self.exploits_to_scan)}"
         )
 
         if len(self.exploits_to_scan) > 0:
+            self.logger.debug(
+                f"Filtering exploits by --exploits {self.exploits_to_scan}"
+            )
             exploits = [
                 exploit for exploit in exploits if exploit.name in self.exploits_to_scan
             ]
@@ -260,19 +255,14 @@ class BlueKit:
                 for exploit in exploits
                 if exploit.name not in self.exclude_exploits
             ]  # suboptimal implementation, but should be fine
-        logging.info(
-            f"start_from_cli_all -> available exploit again amount - {len(exploits)}"
-        )
 
         exploits = [exploit for exploit in exploits if exploit.mass_testing]
 
         if bt_type is not None:
             exploits = [exploit for exploit in exploits if exploit.bt_type == bt_type]
-            logging.info(f"Only {len(exploits)} exploits can be used")
             version = None if float(version) == 0.0 else version
 
         if version is not None:
-            logging.info(f"Target Bluetooth version: {version}")
             exploits = [
                 exploit
                 for exploit in exploits
@@ -280,7 +270,8 @@ class BlueKit:
                 <= float(version)
                 <= float(exploit.bt_version_max)
             ]
-            logging.info(f"Only {len(exploits)} exploits can be used")
+
+        self.logger.debug(f"Only {len(exploits)} exploits can be used")
 
         return exploits
 
@@ -315,11 +306,11 @@ class BlueKit:
         )
         available_exploits = self.get_available_exploits()
 
-        print(
+        self.logger.info(
             f"There are {len(exploit_pool) + len(self.done_exploits)} / {len(available_exploits)} exploits left. {len(self.done_exploits)} have already been tested.\n"
         )
-        print(
-            f"Running the following exploits: {[exploit.name for exploit in exploit_pool]}"
+        self.logger.debug(
+            f"Running exploits: {[exploit.name for exploit in exploit_pool]}"
         )
 
         return exploit_pool
@@ -335,6 +326,22 @@ class BlueKit:
 
     def generate_machine_readable_report(self, target):
         self.report.generate_machine_readable_report(target=target)
+
+
+def setup_logging(log_level: int = logging.INFO):
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level)
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+
+    formatter = logging.Formatter(
+        fmt="[%(levelname)s][%(name)s] %(message)s",
+    )
+
+    # Add a new handler to stream to the console
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    root_logger.addHandler(handler)
 
 
 def main():
@@ -425,27 +432,22 @@ def main():
     parser.add_argument("rest", nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
-    logging.basicConfig(filename=LOG_FILE, level=logging.INFO)
-    logging.info("Started")
+    setup_logging()
 
-    script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-    logging.info(script_dir)
+    # script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    # logging.info(script_dir)
     distribution = pkg_resources.get_distribution("bluekit")
 
-    logging.info(str(distribution))
-    logging.info(str(distribution.location))
-    logging.info(Path(__file__))
+    logging.info(f"{distribution} - {distribution.location}")
+    # logging.info(Path(__file__))
 
-    logging.info("Additional parameters -> " + str(args.rest))
+    logging.debug("Additional parameters -> " + str(args.rest))
 
     addition_parameters = args.rest  # maybe args.rest[1:] is needed, not sure.
-    print(addition_parameters)
     # Store original working directory
-    original_dir = os.getcwd()
-    os.chdir(TOOLKIT_INSTALL_DIR)
     blueExp = BlueKit()
+    os.chdir(TOOLKIT_INSTALL_DIR)
     # Pass original directory to BlueKit
-    blueExp.original_dir = original_dir
     if args.listexploits:
         blueExp.print_available_exploits()
     elif args.checksetup:

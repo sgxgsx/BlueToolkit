@@ -30,7 +30,9 @@ from pybtool.constants import BT_MODE_DUAL
 
 class Recon:
     def __init__(self):
-        self.logger = Logger(name=self.__class__.__name__, log_level=logging.INFO).get()
+        self.logger = logging.getLogger(
+            self.__class__.__name__
+        )  # Logger(name=self.__class__.__name__, log_level=logging.INFO).get()
 
     def check_target(self, target: str):
         status = check_device_status(target)
@@ -61,13 +63,13 @@ class Recon:
             res["type"] = dev.scan(timeout=5, target=target)
             if res["type"] is not None:
                 res["advertising"] = True
-            self.logger.debug(f"run_recon -> found device type: {res['type']}")
+            self.logger.debug(f"Device {target} is advertising as {res['type']}")
             # Check if dev is connectable, default expect random address
             if dev.connect(
                 target, bt_type=BT_MODE_BLE if res["type"] == "BLE" else BT_MODE_BREDR
             ):
                 res["connectable"] = True
-                self.logger.debug(f"run_recon -> device {target} is connected")
+                self.logger.debug(f"Device {target} is connectable")
 
                 # Tries to get the version and vendor
                 res["version"], res["vendor"] = dev.get_remote_version()
@@ -82,7 +84,7 @@ class Recon:
 
                 # Tries to get the pairing features (TODO: decode the value)
                 res["pairable"], res["pairing_features"] = dev.pair()
-                self.logger.debug(f"run_recon -> device {target} is pairable")
+                self.logger.debug(f"Device {target} is pairable")
 
                 dev.disconnect()
                 if not any(value is None for value in res.values()):  # Success
@@ -98,7 +100,7 @@ class Recon:
                 with open(f"{log_dir}recon.json", "w") as f:
                     json.dump(res, f, indent=4)  # indent for pretty formatting
 
-                self.logger.info(f"run_recon -> saving data to {log_dir}")
+                self.logger.info(f"Saving recon data to {log_dir}")
 
             except Exception as e:
                 self.logger.error(f"Error writing to {log_dir}: {e}")

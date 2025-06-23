@@ -52,27 +52,27 @@ class Report:
     def __init__(self, bluekit):
         self.exploitFactory = ExploitFactory()
         self.bluekit = bluekit
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def save_data(self, exploit_name, target, data, code):
         doc = {"code": code, "data": data}
-        logging.info("Rport - save_data -> document -> " + str(doc))
+        filename = REPORT_OUTPUT_FILE.format(target=target, exploit=exploit_name)
+        self.logger.info(f"Saving report to {filename}")
 
-        jsonfile = open(
-            REPORT_OUTPUT_FILE.format(target=target, exploit=exploit_name), "w"
-        )
+        jsonfile = open(filename, "w")
+
         json.dump(doc, jsonfile, indent=4)
         jsonfile.close()
 
     def read_data(self, exploit_name, target):
-        logging.info("Loading report output data")
-        path = REPORT_OUTPUT_FILE.format(target=target, exploit=exploit_name)
-        if Path(path).exists():
+        filename = REPORT_OUTPUT_FILE.format(target=target, exploit=exploit_name)
+        if Path(filename).exists():
+            self.logger.info(f"Loading report data from {filename}")
+
             jsonfile = open(
-                REPORT_OUTPUT_FILE.format(target=target, exploit=exploit_name),
+                filename,
             )
             doc = json.load(jsonfile)
-            logging.info("Report output data is loaded")
-            logging.info("Report - read_data -> document -> " + str(doc))
             return doc["code"], doc["data"]
         return None, None
 
@@ -83,7 +83,7 @@ class Report:
             for entry in path.iterdir()
             if entry.is_dir() and entry.name not in SKIP_DIRECTORIES
         ]
-        logging.info("Extracted following completed exploits: " + str(exploits))
+        self.logger.info("Extracted following completed exploits: " + str(exploits))
         return exploits
 
     def generate_report(self, target):
@@ -95,22 +95,29 @@ class Report:
             if exploit.name not in done_exploits
         ]
 
-        logging.info("Report.generate_report -> done_exploits = " + str(done_exploits))
-        logging.info("Report.generate_report -> all_exploits = " + str(all_exploits))
-        logging.info(
-            "Report.generate_report -> skipped_exploits = " + str(skipped_exploits)
-        )
+        self.logger.info(f"Tested exploits: {done_exploits}")
+        self.logger.info(f"All exploits {all_exploits}")
+        self.logger.info(f"Skipped exploits {skipped_exploits}")
 
         headers = ["Index", "Exploit", "Result", "Data"]
         table_data = []
-        index = 1
-        sorted_done_exploits = sorted(done_exploits, key=lambda x: x[2])
-        for exploit in sorted_done_exploits:
-            code, data = self.read_data(exploit_name=exploit, target=target)
+        for idx, exploit in enumerate(all_exploits):
+            if exploit.name in skipped_exploits:
+                table_data.append(
+                    [
+                        idx + 1,
+                        f"{Fore.WHITE}{exploit.name}{Style.RESET_ALL}",
+                        f"{Fore.WHITE}Not tested{Style.RESET_ALL}",
+                        "",
+                    ]
+                )
+                continue
+
+            code, data = self.read_data(exploit_name=exploit.name, target=target)
             if code is None:
                 code = ReturnCode.UNKNOWN_STATE
                 data = "Error during loading the report"
-            logging.info("data - " + str(data))
+            self.logger.info("data - " + str(data))
             if data is None:
                 data = "Error with data"
             symbol = ""
@@ -122,8 +129,8 @@ class Report:
             if code == ReturnCode.VULNERABLE:
                 table_data.append(
                     [
-                        index,
-                        f"{Fore.RED}{exploit}{Style.RESET_ALL}",
+                        idx + 1,
+                        f"{Fore.RED}{exploit.name}{Style.RESET_ALL}",
                         f"{Fore.RED}Vulnerable{symbol}{Style.RESET_ALL}",
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
@@ -131,8 +138,8 @@ class Report:
             elif code == ReturnCode.NOT_VULNERABLE:
                 table_data.append(
                     [
-                        index,
-                        f"{Fore.GREEN}{exploit}{Style.RESET_ALL}",
+                        idx + 1,
+                        f"{Fore.GREEN}{exploit.name}{Style.RESET_ALL}",
                         f"{Fore.GREEN}Not vulnerable{symbol}{Style.RESET_ALL}",
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
@@ -140,8 +147,8 @@ class Report:
             elif code == ReturnCode.ERROR:
                 table_data.append(
                     [
-                        index,
-                        f"{Fore.CYAN}{exploit}{Style.RESET_ALL}",
+                        idx + 1,
+                        f"{Fore.CYAN}{exploit.name}{Style.RESET_ALL}",
                         f"{Fore.CYAN}Error{symbol}{Style.RESET_ALL}",
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
@@ -149,8 +156,8 @@ class Report:
             elif code == ReturnCode.UNDEFINED:
                 table_data.append(
                     [
-                        index,
-                        f"{Fore.WHITE}{exploit}{Style.RESET_ALL}",
+                        idx + 1,
+                        f"{Fore.WHITE}{exploit.name}{Style.RESET_ALL}",
                         f"{Fore.WHITE}Undefined{symbol}{Style.RESET_ALL}",
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
@@ -158,8 +165,8 @@ class Report:
             elif code == ReturnCode.UNKNOWN_STATE:
                 table_data.append(
                     [
-                        index,
-                        f"{Fore.WHITE}{exploit}{Style.RESET_ALL}",
+                        idx + 1,
+                        f"{Fore.WHITE}{exploit.name}{Style.RESET_ALL}",
                         f"{Fore.WHITE}Toolkit error{symbol}{Style.RESET_ALL}",
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
@@ -167,25 +174,25 @@ class Report:
             else:
                 table_data.append(
                     [
-                        index,
-                        f"{Fore.WHITE}{exploit}{Style.RESET_ALL}",
+                        idx + 1,
+                        f"{Fore.WHITE}{exploit.name}{Style.RESET_ALL}",
                         f"{Fore.WHITE}Toolkit error during report generation{symbol}{Style.RESET_ALL}",
                         data[:MAX_CHARS_DATA_TRUNCATION],
                     ]
                 )
-            index += 1
-        for skipped_exploit in skipped_exploits:
-            table_data.append(
-                [
-                    index,
-                    f"{Fore.WHITE}{skipped_exploit}{Style.RESET_ALL}",
-                    f"{Fore.WHITE}Not tested{Style.RESET_ALL}",
-                    "",
-                ]
-            )
-            index += 1
 
-        logging.info("Report.generate_report -> table_data = " + str(table_data))
+        # for skipped_exploit in skipped_exploits:
+        #     table_data.append(
+        #         [
+        #             index,
+        #             f"{Fore.WHITE}{skipped_exploit}{Style.RESET_ALL}",
+        #             f"{Fore.WHITE}Not tested{Style.RESET_ALL}",
+        #             "",
+        #         ]
+        #     )
+        #     index += 1
+
+        self.logger.info("Report.generate_report -> table_data = " + str(table_data))
 
         table = tabulate(
             table_data,
@@ -223,9 +230,13 @@ class Report:
             if exploit.name not in done_exploits
         ]
 
-        logging.info("Report.generate_report -> done_exploits = " + str(done_exploits))
-        logging.info("Report.generate_report -> all_exploits = " + str(all_exploits))
-        logging.info(
+        self.logger.info(
+            "Report.generate_report -> done_exploits = " + str(done_exploits)
+        )
+        self.logger.info(
+            "Report.generate_report -> all_exploits = " + str(all_exploits)
+        )
+        self.logger.info(
             "Report.generate_report -> skipped_exploits = " + str(skipped_exploits)
         )
 
@@ -240,7 +251,7 @@ class Report:
             if code is None:
                 code = ReturnCode.UNKNOWN_STATE
                 data = "Error during loading the report"
-            logging.info("data - " + str(data))
+            self.logger.info("data - " + str(data))
             sorted_done_exploits_json.append(
                 {"index": index, "name": exploit, "code": code, "data": data}
             )
@@ -269,28 +280,28 @@ class Report:
 
         # Save the report in the default location
         source_file = FULL_REPORT_OUTPUT_FILE.format(target=target)
-        logging.info(f"Creating report at: {source_file}")
+        self.logger.info(f"Creating report at: {source_file}")
         jsonfile = open(source_file, "w")
         json.dump(output_json, jsonfile, indent=4)
         jsonfile.close()
 
         # Verify the file was created
         if not os.path.exists(source_file):
-            logging.error(f"Failed to create report at {source_file}")
+            self.logger.error(f"Failed to create report at {source_file}")
             return
 
-        logging.info(f"Report created successfully at {source_file}")
+        self.logger.info(f"Report created successfully at {source_file}")
 
         # Copy the report to current directory with MAC address in filename
 
         # Get the original directory from BlueKit instance
         dest_file = os.path.join(self.bluekit.original_dir, f"{target}_report.json")
-        logging.info(f"Attempting to copy report to: {dest_file}")
+        self.logger.info(f"Attempting to copy report to: {dest_file}")
         try:
             shutil.copy2(source_file, dest_file)
             # Allow non-root users to read the file
             os.chmod(dest_file, 0o664)
-            logging.info(f"Successfully copied report to {dest_file}")
+            self.logger.info(f"Successfully copied report to {dest_file}")
             print(f"Report saved to: {dest_file}")
         except Exception as e:
-            logging.error(f"Error copying report to current directory: {str(e)}")
+            self.logger.error(f"Error copying report to current directory: {str(e)}")

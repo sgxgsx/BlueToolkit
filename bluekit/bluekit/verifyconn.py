@@ -10,11 +10,10 @@ from pybtool.constants import (
 )
 
 
-
 def print_device_status(status: int):
     if status == 0:
         return "Device not advertising and not connectable"
-    
+
     parts = []
 
     if status & ConnVerifier.TARGET_ADVERTISING:
@@ -33,6 +32,7 @@ def print_device_status(status: int):
         parts.append("not pairable")
 
     print("Device " + ", ".join(parts))
+
 
 def check_device_status(target: str) -> int:
     """
@@ -59,15 +59,19 @@ def check_device_status(target: str) -> int:
 
     return retval
 
+
 def dos_checker(target: str):
     try:
         for i in range(ConnVerifier.MAX_DOS_TESTS):
             status = check_device_status(target)
-            if status & ConnVerifier.TARGET_CONNECTABLE or status & ConnVerifier.TARGET_PAIRABLE:
+            if (
+                status & ConnVerifier.TARGET_CONNECTABLE
+                or status & ConnVerifier.TARGET_PAIRABLE
+            ):
                 return ReturnCode.NOT_VULNERABLE, str(i)
-            
+
             # TODO: what if it is advertising only?
 
-        return ReturnCode.VULNERABLE, str(i) 
+        return ReturnCode.VULNERABLE, str(i)
     except Exception as e:
         return ReturnCode.ERROR, str(e)

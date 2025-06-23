@@ -32,7 +32,7 @@ from bluekit.verifyconn import dos_checker
 
 class Engine:
     def __init__(self):
-        self.logger = Logger(name=self.__class__.__name__)
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.pull_location = None
 
     def construct_exploit_command(
@@ -51,7 +51,7 @@ class Engine:
 
         for param in current_exploit.parameters:
             if param["name"] in parameters_list:
-                logging.info(
+                self.logger.info(
                     f"Engine.construct_exploit_command -> parameter_name in parameter_List {param}"
                 )
 
@@ -97,7 +97,7 @@ class Engine:
                 and param["name"] == current_exploit.log_pull["pull_parameter"]
             ):
                 if param["name_required"]:
-                    logging.info("name required -> ")
+                    self.logger.info("name required -> ")
                     if param["parameter_connector"] != DEFAULT_CONNECTOR:
                         exploit_command.append(
                             param["name"]
@@ -108,30 +108,19 @@ class Engine:
                         exploit_command.append(param["name"])
                         exploit_command.append(self.pull_location)
                 else:
-                    logging.info("append")
+                    self.logger.info("append")
                     exploit_command.append(self.pull_location)
                 pull_directory_not_added = False
             elif param["required"]:
                 self.logger.error(
-                    "Parameter {} is required, but was not found in your command".format(
-                        param["name"]
-                    )
-                )
-                raise Exception(
-                    "Parameter {} is required, but was not found in your command".format(
-                        param["name"]
-                    )
+                    f"Parameter {param['name']} is required, but was not found in your command"
                 )
 
-        logging.info(
-            "Engine.construct_exploit_command -> exploit_command list -> "
-            + str(exploit_command)
-        )
-        logging.info(
-            "Engine.construct_exploit_command -> exploit command together -> {}".format(
-                " ".join(exploit_command)
-            )
-        )
+                raise Exception(
+                    f"Parameter {param['name']} is required, but was not found in your command"
+                )
+
+        self.logger.info(f"Exploit command -> {' '.join(exploit_command)}")
 
         return exploit_command
 
@@ -146,7 +135,7 @@ class Engine:
             target, current_exploit, parameters, pull_in_command=pull_in_command
         )
 
-        print(f"Running exploit {current_exploit.name}")
+        self.logger.info(f"Testing {current_exploit.name}")
 
         if current_exploit.directory["change"]:
             new_directory = TOOLKIT_INSTALL_DIR
@@ -175,7 +164,7 @@ class Engine:
             response_code, data = dos_checker(target)
         else:
             # TODO: modify data to optimize processing
-            logging.info("Engine.run_test -> data " + str(data))
+            self.logger.debug(f"Result data: {data}")
             response_code, data = self.process_raw_data(data, if_failed)
 
         if not pull_in_command:
@@ -192,113 +181,97 @@ class Engine:
         change_directory=False,
         directory=None,
     ) -> tuple:
-
         if change_directory:
             os.chdir(directory)
-            logging.info("Engine.execute_command -> chdir to {}".format(directory))
+            self.logger.debug(f"Moving workdir to {directory}")
         else:
             os.chdir(TOOLKIT_INSTALL_DIR)
 
         command = None
 
         try:
-            self.logger.info(
-                "Starting the next exploit - name {} and command {}".format(
-                    exploit_name, exploit_command
-                )
-            )
             command = subprocess.Popen(
                 exploit_command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 preexec_fn=os.setsid,
-            )  # for some reason doesn't accept tokenized exploit_command (leads to a bug)
-
-            logging.info(
-                "Engine.execute_command -> sleeping for {} seconds".format(timeout)
             )
+
+            self.logger.debug(f"Executing {exploit_command} with timeout {timeout}")
             stdout, stderr = command.communicate(timeout=timeout)
 
-            logging.info(
-                f"{self.__class__.__name__}Engine.execute_command -> command.communicate " + str(stdout)
-            )
             data = True, stdout
         except Exception as e:
-            logging.info(f"Engine.execute_command -> Failed to execute command: {e}")
-        # except subprocess.TimeoutExpired as e:
-            logging.info(
-                "Engine.execute_command -> Killing the exploit and sleeping for another 1 second"
-            )
+            self.logger.warning(f"{e}")
             # for child in psutil.Process(pid).children(recursive=True):
             #     child.kill()
             os.killpg(os.getpgid(command.pid), signal.SIGTERM)
             time.sleep(1)
             data = False, b""
-        
+
         returncode = command.returncode if command else -1
 
-
         if change_directory:
             os.chdir(TOOLKIT_INSTALL_DIR)
 
-        logging.info("Engine.execute_command -> data -> " + str(data))
+        self.logger.debug(f"Command result: {data}")
         return data
 
-    def execute_manual_exploit(
-        self,
-        target,
-        exploit_command,
-        exploit_name,
-        timeout=ConnVerifier.TIMEOUT,
-        change_directory=False,
-        directory=None,
-    ) -> tuple:
-        pid = None
-        if change_directory:
-            os.chdir(directory)
-            logging.info("Engine.execute_command -> chdir to {}".format(directory))
-        else:
-            os.chdir(TOOLKIT_INSTALL_DIR)
+    # def execute_manual_exploit(
+    #     self,
+    #     target,
+    #     exploit_command,
+    #     exploit_name,
+    #     timeout=ConnVerifier.TIMEOUT,
+    #     change_directory=False,
+    #     directory=None,
+    # ) -> tuple:
+    #     pid = None
+    #     if change_directory:
+    #         os.chdir(directory)
+    #         self.logger.info("Engine.execute_command -> chdir to {}".format(directory))
+    #     else:
+    #         os.chdir(TOOLKIT_INSTALL_DIR)
 
-        data = False, b""
+    #     data = False, b""
 
-        try:
-            self.logger.info(
-                "Starting the next exploit - name {} and command {}".format(
-                    exploit_name, exploit_command
-                )
-            )
-            command = subprocess.Popen(
-                " ".join(exploit_command),
-                stdout=subprocess.PIPE,
-                shell=True,
-                preexec_fn=os.setsid,
-            )  # for some reason doesn't accept tokenized exploit_command (leads to a bug)
-            pid = command.pid
+    #     try:
+    #         self.logger.info(
+    #             "Starting the next exploit - name {} and command {}".format(
+    #                 exploit_name, exploit_command
+    #             )
+    #         )
+    #         command = subprocess.Popen(
+    #             " ".join(exploit_command),
+    #             stdout=subprocess.PIPE,
+    #             shell=True,
+    #             preexec_fn=os.setsid,
+    #         )  # for some reason doesn't accept tokenized exploit_command (leads to a bug)
+    #         pid = command.pid
 
-            logging.info(
-                "Engine.execute_command -> sleeping for {} seconds".format(timeout)
-            )
+    #         self.logger.info(
+    #             "Engine.execute_command -> sleeping for {} seconds".format(timeout)
+    #         )
 
-            new_data = command.communicate()[0]
-            logging.info(
-                "Engine.execute_command -> command.communicate " + str(new_data)
-            )
-            data = True, new_data
-        except subprocess.TimeoutExpired as e:
-            logging.info(
-                "Engine.execute_command -> Killing the exploit and sleeping for another 1 second"
-            )
-            for child in psutil.Process(pid).children(recursive=True):
-                child.kill()
-            os.killpg(os.getpgid(command.pid), signal.SIGTERM)
-            time.sleep(1)
+    #         new_data = command.communicate()[0]
+    #         self.logger.info(
+    #             "Engine.execute_command -> command.communicate " + str(new_data)
+    #         )
+    #         data = True, new_data
+    #     except subprocess.TimeoutExpired as e:
+    #         self.logger.info(
+    #             "Engine.execute_command -> Killing the exploit and sleeping for another 1 second"
+    #         )
+    #         for child in psutil.Process(pid).children(recursive=True):
+    #             child.kill()
+    #         os.killpg(os.getpgid(command.pid), signal.SIGTERM)
+    #         time.sleep(1)
 
-        if change_directory:
-            os.chdir(TOOLKIT_INSTALL_DIR)
+    #     if change_directory:
+    #         os.chdir(TOOLKIT_INSTALL_DIR)
 
-        logging.info("Engine.execute_command -> data -> " + str(data))
-        return data
+    #     self.logger.info("Engine.execute_command -> data -> " + str(data))
+    #     return data
 
     def process_raw_data(self, data, if_failed):
         # INEFFICIENTLY processes data line by line (there is room for improvement)
@@ -306,38 +279,23 @@ class Engine:
             # TODO: if data is empty, return error directly
             mm = re.compile(REGEX_EXPLOIT_OUTPUT_DATA)
             output = mm.search(data).group()
-            print(output)
-            logging.info(
-                "Engine.process_raw_data -> Found data from the exploit {}".format(
-                    output
-                )
-            )
+            self.logger.info(f"Exploit raw data 1: {output}")
 
             mm2 = re.compile(REGEX_EXPLOIT_OUTPUT_DATA_CODE)
             mm3 = re.compile(REGEX_EXPLOIT_OUTPUT_DATA_DATA)
 
             output2 = int(mm2.search(output).group().rstrip(b",").split(b"=")[1])
-            logging.info(
-                "Engine.process_raw_data -> Found data from the exploit, code -> {}".format(
-                    output2
-                )
-            )
+            self.logger.info(f"Exploit raw data 2: {output2}")
+
             output3 = (mm3.search(output).group().split(b"=")[1]).decode()
-            logging.info(
-                "Engine.process_raw_data -> Found data from the exploit, data -> {}".format(
-                    output3
-                )
-            )
+            self.logger.info(f"Exploit raw data 3: {output3}")
 
             return int(output2), output3
         except Exception as e:
-            logging.info(
-                "Engine.process_raw_data -> Error during extracting information from the regex "
-                + str(e)
-            )
+            self.logger.error(f"Error extracting information from the regex {e}")
             return (
                 ReturnCode.UNKNOWN_STATE,
-                "Error during extracting information from the regex",
+                "Error extracting information from the regex",
             )
 
     def pull_information(self, target, current_exploit: Exploit) -> None:
@@ -357,7 +315,7 @@ class Engine:
 
             shutil.copytree(directory, self.pull_location, dirs_exist_ok=True)
         else:
-            self.logger.info("from_directory: false, is not yet implemented")
+            self.logger.info("from_directory: is not yet implemented")
             return
             raise Exception("from_directory: false, is not yet implemented")
 
@@ -366,13 +324,8 @@ class Engine:
             self.check_pull_location(target, current_exploit.name)
 
     def process_additional_paramters(self, parameters: list) -> dict:
-        logging.info(
-            "Engine.process_additional_paramters -> list parameters " + str(parameters)
-        )
-        param_dict = {}
-        for i in range(0, len(parameters), 2):
-            param_dict[parameters[i]] = parameters[i + 1]
-        return param_dict
+        self.logger.debug(f"Process additional parameters: {parameters}")
+        return {parameters[i]: parameters[i + 1] for i in range(0, len(parameters), 2)}
 
     def get_parameters_list(self, parameters: list) -> list:
         return [parameters[i] for i in range(0, len(parameters), 2)]
