@@ -115,6 +115,7 @@ class Report:
                 continue
 
             code, data = self.read_data(exploit_name=exploit.name, target=target)
+
             if code is None:
                 code = ReturnCode.UNKNOWN_STATE
                 data = "Error during loading the report"
@@ -193,7 +194,7 @@ class Report:
         #     )
         #     index += 1
 
-        self.logger.info("Report.generate_report -> table_data = " + str(table_data))
+        self.logger.debug("Report.generate_report -> table_data = " + str(table_data))
 
         table = tabulate(
             table_data,
@@ -302,7 +303,6 @@ class Report:
             shutil.copy2(source_file, dest_file)
             # Allow non-root users to read the file
             os.chmod(dest_file, 0o664)
-            self.logger.info(f"Successfully copied report to {dest_file}")
-            print(f"Report saved to: {dest_file}")
+            self.logger.info(f"Successfully saved report to {dest_file}")
         except Exception as e:
             self.logger.error(f"Error copying report to current directory: {str(e)}")

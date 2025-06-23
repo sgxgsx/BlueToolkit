@@ -125,7 +125,9 @@ class Engine:
 
         return exploit_command
 
-    def run_test(self, target: str, current_exploit: Exploit, parameters: list) -> None:
+    def run_test(
+        self, target: str, current_exploit: Exploit, parameters: list
+    ) -> tuple:
         self.check_pull_location(target, current_exploit.name)
 
         pull_in_command = current_exploit.log_pull["in_command"]
@@ -165,8 +167,8 @@ class Engine:
             response_code, data = dos_checker(target)
         else:
             # TODO: modify data to optimize processing
-            self.logger.debug(f"Result data: {data}")
             response_code, data = self.process_raw_data(data, if_failed)
+            self.logger.info(f"Result data: {data}")
 
         if not pull_in_command:
             self.pull_information(target, current_exploit)
@@ -292,7 +294,7 @@ class Engine:
                     parsed_data = json.loads(json.dumps(pyobj))
 
             return_code = parsed_data.get("return_code", ReturnCode.UNKNOWN_STATE)
-            output_data = parsed_data.get("output_data", "")
+            output_data = parsed_data.get("return_data", "")
 
         except Exception as e:
             self.logger.error(f"Error processing the raw output: {e}")

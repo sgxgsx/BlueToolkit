@@ -77,10 +77,7 @@ class Recon:
                 # Tries to get the ll/lmp remote features
                 features = dev.get_remote_features()
 
-                if res["type"] == "BREDR":
-                    res["lmp_features"] = features
-                else:
-                    res["ll_features"] = features
+                res["lmp_ll_features"] = features
 
                 # Tries to get the pairing features (TODO: decode the value)
                 res["pairable"], res["pairing_features"] = dev.pair()
