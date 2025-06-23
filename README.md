@@ -1,9 +1,11 @@
 <!-- # BlueToolkit -->
 
 <h1 align="center">
-  <img src="/static/bluetoolkit.png" width="300px" alt="BlueToolkit">
+  <picture>
+    <source srcset="/static/bluetoolkit_white.png" media="(prefers-color-scheme: dark)">
+    <img src="/static/bluetoolkit.png" width="300px" alt="BlueToolkit">
+  </picture>
 </h1>
-
 
 <h4 align="center">Extensible Bluetooth vulnerability testing framework for BR/EDR and BLE.</h4>
 
