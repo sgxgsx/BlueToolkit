@@ -230,17 +230,19 @@ while true; do
       echo "Installing Braktooth"
       # Requirements
       apt-get install libpulse0 qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools libc-ares-dev 
-      wget https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-      sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
-      rm -f libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
+      wget -O /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+      sudo dpkg -i /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+      rm -f /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
 
       # ESP firmware
       python3 $TOOLS_DIR/braktooth/release/firmware.py flash /dev/ttyUSB1
 
       tar -I zstd -xf $TOOLS_DIR/braktooth/wdissector.tar.zst -C $TOOLS_DIR/braktooth/
-      cat $TOOLS_DIR/braktooth/requirements.sh | sed -e 's/qt5-default//' > $TOOLS_DIR/braktooth/requirements2.sh
-      chmod +x $TOOLS_DIR/braktooth/requirements2.sh
-      $TOOLS_DIR/braktooth/requirements2.sh
+      sed -i 's/qt5-default//g' $TOOLS_DIR/braktooth/wdissector/requirements.sh
+
+      # cat $TOOLS_DIR/braktooth/requirements.sh | sed -e 's/qt5-default//' > $TOOLS_DIR/braktooth/requirements2.sh
+      chmod +x $TOOLS_DIR/braktooth/wdissector/requirements.sh
+      # $TOOLS_DIR/braktooth/requirements2.sh
 
       
       echo "Done."
