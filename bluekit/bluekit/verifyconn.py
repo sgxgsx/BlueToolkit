@@ -1,3 +1,4 @@
+import time
 from bluekit.constants import ConnVerifier, ReturnCode
 
 from pybtool.device import Device
@@ -34,7 +35,7 @@ def print_device_status(status: int):
     print("Device " + ", ".join(parts))
 
 
-def check_device_status(target: str) -> int:
+def check_device_status(target: str, only_conn: bool = False) -> int:
     """
     Check the status of a Bluetooth device by scanning, connecting, and pairing.
     """
@@ -50,7 +51,7 @@ def check_device_status(target: str) -> int:
     if dev.connect(target):
         retval = retval | ConnVerifier.TARGET_CONNECTABLE
 
-    if retval & ConnVerifier.TARGET_CONNECTABLE:
+    if retval & ConnVerifier.TARGET_CONNECTABLE and not only_conn:
         if dev.pair():
             retval = retval | ConnVerifier.TARGET_PAIRABLE
 
@@ -63,13 +64,13 @@ def check_device_status(target: str) -> int:
 def dos_checker(target: str):
     try:
         for i in range(ConnVerifier.MAX_DOS_TESTS):
-            status = check_device_status(target)
+            status = check_device_status(target, only_conn=True)
             if (
                 status & ConnVerifier.TARGET_CONNECTABLE
                 or status & ConnVerifier.TARGET_PAIRABLE
             ):
                 return ReturnCode.NOT_VULNERABLE, str(i)
-
+            time.sleep(0.5)
             # TODO: what if it is advertising only?
 
         return ReturnCode.VULNERABLE, str(i)

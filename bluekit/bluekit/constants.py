@@ -62,7 +62,7 @@ SKIP_DIRECTORIES = ["recon"]  # skip these directories when getting exploit name
 
 class ConnVerifier:
     MAX_DOS_TESTS = 5
-    TIMEOUT = 40
+    TIMEOUT = 30
 
     TARGET_NOT_AVAILABLE = 0b0000  # 0
     TARGET_CONNECTABLE = 0b0001  # 1

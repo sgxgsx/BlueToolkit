@@ -24,7 +24,7 @@ from bluekit.factories.exploitfactory import ExploitFactory
 
 
 def report_data(code, data):
-    logging.info(f"return_code={code}, return_data={data}")
+    # logging.info(f"return_code={code}, return_data={data}")
     data = {"return_code": code, "return_data": data}
     print(f"{data}")
 
@@ -58,7 +58,7 @@ class Report:
     def save_data(self, exploit_name, target, data, code):
         doc = {"code": code, "data": data}
         filename = REPORT_OUTPUT_FILE.format(target=target, exploit=exploit_name)
-        self.logger.info(f"Saving report to {filename}")
+        self.logger.debug(f"Saving report to {filename}")
 
         jsonfile = open(filename, "w")
 
@@ -68,7 +68,7 @@ class Report:
     def read_data(self, exploit_name, target):
         filename = REPORT_OUTPUT_FILE.format(target=target, exploit=exploit_name)
         if Path(filename).exists():
-            self.logger.info(f"Loading report data from {filename}")
+            self.logger.debug(f"Loading report {filename}")
 
             jsonfile = open(
                 filename,
@@ -84,7 +84,6 @@ class Report:
             for entry in path.iterdir()
             if entry.is_dir() and entry.name not in SKIP_DIRECTORIES
         ]
-        self.logger.info("Extracted following completed exploits: " + str(exploits))
         return exploits
 
     def generate_report(self, target):
@@ -96,9 +95,9 @@ class Report:
             if exploit.name not in done_exploits
         ]
 
-        self.logger.info(f"Tested exploits: {done_exploits}")
-        self.logger.info(f"All exploits {all_exploits}")
-        self.logger.info(f"Skipped exploits {skipped_exploits}")
+        # self.logger.info(f"Tested exploits: {done_exploits}")
+        # self.logger.info(f"All exploits {all_exploits}")
+        # self.logger.info(f"Skipped exploits {skipped_exploits}")
 
         headers = ["Index", "Exploit", "Result", "Data"]
         table_data = []
@@ -119,7 +118,6 @@ class Report:
             if code is None:
                 code = ReturnCode.UNKNOWN_STATE
                 data = "Error during loading the report"
-            self.logger.info("data - " + str(data))
             if data is None:
                 data = "Error with data"
             symbol = ""
@@ -194,7 +192,7 @@ class Report:
         #     )
         #     index += 1
 
-        self.logger.debug("Report.generate_report -> table_data = " + str(table_data))
+        self.logger.debug(f"Report table\n{table_data}")
 
         table = tabulate(
             table_data,
@@ -232,15 +230,9 @@ class Report:
             if exploit.name not in done_exploits
         ]
 
-        self.logger.info(
-            "Report.generate_report -> done_exploits = " + str(done_exploits)
-        )
-        self.logger.info(
-            "Report.generate_report -> all_exploits = " + str(all_exploits)
-        )
-        self.logger.info(
-            "Report.generate_report -> skipped_exploits = " + str(skipped_exploits)
-        )
+        self.logger.debug(f"Tested exploits: {done_exploits}")
+        self.logger.debug(f"Available exploits: {all_exploits}")
+        self.logger.debug(f"Skipped_exploits: {skipped_exploits}")
 
         index = 1
         sorted_done_exploits = sorted(done_exploits, key=lambda x: x[2])
@@ -253,7 +245,6 @@ class Report:
             if code is None:
                 code = ReturnCode.UNKNOWN_STATE
                 data = "Error during loading the report"
-            self.logger.info("data - " + str(data))
             sorted_done_exploits_json.append(
                 {"index": index, "name": exploit, "code": code, "data": data}
             )
@@ -282,7 +273,6 @@ class Report:
 
         # Save the report in the default location
         source_file = FULL_REPORT_OUTPUT_FILE.format(target=target)
-        self.logger.info(f"Creating report at: {source_file}")
         jsonfile = open(source_file, "w")
         json.dump(output_json, jsonfile, indent=4)
         jsonfile.close()
@@ -292,17 +282,16 @@ class Report:
             self.logger.error(f"Failed to create report at {source_file}")
             return
 
-        self.logger.info(f"Report created successfully at {source_file}")
+        self.logger.debug(f"Report saved at {source_file}")
 
         # Copy the report to current directory with MAC address in filename
 
         # Get the original directory from BlueKit instance
         dest_file = os.path.join(self.bluekit.original_dir, f"{target}_report.json")
-        self.logger.info(f"Attempting to copy report to: {dest_file}")
         try:
             shutil.copy2(source_file, dest_file)
             # Allow non-root users to read the file
             os.chmod(dest_file, 0o664)
-            self.logger.info(f"Successfully saved report to {dest_file}")
+            self.logger.debug(f"Successfully saved report to {dest_file}")
         except Exception as e:
             self.logger.error(f"Error copying report to current directory: {str(e)}")
