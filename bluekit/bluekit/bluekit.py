@@ -167,11 +167,10 @@ class BlueKit:
     def check_target(self, target):
         while True:
             for _ in range(ConnVerifier.MAX_DOS_TESTS):
-                status = check_device_status(target)
-                if (
-                    status & ConnVerifier.TARGET_CONNECTABLE
-                    or status & ConnVerifier.TARGET_PAIRABLE
-                ):
+                status = check_device_status(
+                    target, only_conn=True
+                )  # Does not check pairability
+                if status & ConnVerifier.TARGET_CONNECTABLE:
                     return True
 
             while True:
@@ -324,6 +323,20 @@ class BlueKit:
         self.report.generate_machine_readable_report(target=target)
 
 
+class TqdmLoggingHandler(logging.Handler):
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            if sys.stdout.isatty():
+                tqdm.write(msg, file=sys.stdout)
+            else:
+                # Fallback to standard print if not a TTY (e.g., running in IDE output window or redirected)
+                print(msg, file=sys.stdout)
+            self.flush()  # Ensure the message is written immediately
+        except Exception:
+            self.handleError(record)
+
+
 def setup_logging(log_level: int = logging.INFO):
     root_logger = logging.getLogger()
     root_logger.setLevel(log_level)
@@ -334,8 +347,8 @@ def setup_logging(log_level: int = logging.INFO):
         fmt="[%(levelname)s][%(name)s] %(message)s",
     )
 
-    # Add a new handler to stream to the console
-    handler = logging.StreamHandler(sys.stdout)
+    # handler = logging.StreamHandler(sys.stdout)
+    handler = TqdmLoggingHandler(log_level)
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
 
