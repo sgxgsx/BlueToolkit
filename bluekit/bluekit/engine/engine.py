@@ -3,9 +3,11 @@ import json
 import logging
 import shutil
 import sys
+import threading
 import time
 import os
 import re
+from typing import IO
 import psutil
 import subprocess
 import signal
@@ -37,27 +39,27 @@ class Engine:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.pull_location = None
 
-    def construct_exploit_command(
+    def build_exploit_command(
         self,
         target: str,
-        current_exploit: Exploit,
+        exploit: Exploit,
         parameters: list,
         pull_in_command=False,
     ) -> str:
-        exploit_command = current_exploit.command.strip().split(" ")
+        exploit_command = exploit.command.strip().split(" ")
 
         parameters_dict = self.process_additional_paramters(parameters)
         parameters_list = self.get_parameters_list(parameters)
 
         pull_directory_not_added = True  # default pull_directory for pull_in_command=True in case directory parameter not provided
-        for param in current_exploit.parameters:
+        for param in exploit.parameters:
             if param["name"] in parameters_list:
                 self.logger.info(
                     f"Engine.construct_exploit_command -> parameter_name in parameter_List {param}"
                 )
 
                 """
-                if pull_in_command and param['name'] == current_exploit.log_pull['pull_parameter']:                    # Additional complexity as an unnecessary, but simple and fast "hack"
+                if pull_in_command and param['name'] == exploit.log_pull['pull_parameter']:                    # Additional complexity as an unnecessary, but simple and fast "hack"
                     if param['name_required']:
                         if param['parameter_connector'] != DEFAULT_CONNECTOR:
                             exploit_command.append(param['name'] + param['parameter_connector'] + self.pull_location)
@@ -94,8 +96,7 @@ class Engine:
                 else:
                     exploit_command.append(target)
             elif (
-                pull_in_command
-                and param["name"] == current_exploit.log_pull["pull_parameter"]
+                pull_in_command and param["name"] == exploit.log_pull["pull_parameter"]
             ):
                 if param["name_required"]:
                     self.logger.info("name required -> ")
@@ -121,211 +122,153 @@ class Engine:
                     f"Parameter {param['name']} is required, but was not found in your command"
                 )
 
-        self.logger.info(f"Exploit command -> {' '.join(exploit_command)}")
-
         return exploit_command
 
-    def run_test(
-        self, target: str, current_exploit: Exploit, parameters: list
-    ) -> tuple:
-        self.check_pull_location(target, current_exploit.name)
+    def run_test(self, target: str, exploit: Exploit, parameters: list) -> tuple:
+        self.check_pull_location(target, exploit.name)
 
-        pull_in_command = current_exploit.log_pull["in_command"]
+        pull_in_command = exploit.log_pull["in_command"]
 
-        # Tdone ODO extract timing information and exploit type here
-
-        exploit_command = self.construct_exploit_command(
-            target, current_exploit, parameters, pull_in_command=pull_in_command
+        exploit_command = self.build_exploit_command(
+            target, exploit, parameters, pull_in_command=pull_in_command
         )
 
-        self.logger.info(f"Testing {current_exploit.name}")
+        self.logger.info(f"Testing {exploit.name}")
 
-        if current_exploit.directory["change"]:
+        new_directory = None
+
+        if exploit.directory["change"]:
             new_directory = TOOLKIT_INSTALL_DIR
-            if not current_exploit.directory["directory"].startswith("/"):
-                new_directory += "/"
-            new_directory += current_exploit.directory["directory"]
+            new_directory += "/" if exploit.directory["directory"][0] != "/" else ""
+            new_directory += exploit.directory["directory"]
 
-            if_failed, data = self.execute_command(
-                target,
-                exploit_command,
-                current_exploit.name,
-                timeout=current_exploit.max_timeout,
-                change_directory=True,
-                directory=new_directory,
-            )
-        else:
-            if_failed, data = self.execute_command(
-                target,
-                exploit_command,
-                current_exploit.name,
-                timeout=current_exploit.max_timeout,
-            )
+        data = self.execute_command(
+            exploit_command,
+            timeout=exploit.max_timeout,
+            directory=new_directory,
+        )
 
-        if current_exploit.type == ExploitType.DOS:
+        if exploit.type == ExploitType.DOS:
             # TODO: possible gray-box check here if we have access to the target device
             response_code, data = dos_checker(target)
         else:
             # TODO: modify data to optimize processing
-            response_code, data = self.process_raw_data(data, if_failed)
+            response_code, data = self.process_raw_data(data, exploit.name)
             self.logger.info(f"Result data: {data}")
 
         if not pull_in_command:
-            self.pull_information(target, current_exploit)
+            self.pull_information(target, exploit)
 
         return response_code, data
 
+    def read_output_to_list(self, pipe: IO[str], output_list):
+        try:
+            for line in iter(pipe.readline, ""):
+                output_list.append(line.strip())
+        except ValueError as _:
+            # Ignore errors
+            pass
+
+        pipe.close()
+
     def execute_command(
         self,
-        target: str,
         exploit_command: list,
-        exploit_name: str,
-        timeout=ConnVerifier.TIMEOUT,
-        change_directory=False,
-        directory=None,
-    ) -> tuple:
-        if change_directory:
+        timeout: int = ConnVerifier.TIMEOUT,
+        directory: str = None,
+    ) -> str:
+        if directory is not None:
             os.chdir(directory)
-            self.logger.debug(f"Moving workdir to {directory}")
         else:
             os.chdir(TOOLKIT_INSTALL_DIR)
 
         command = None
+        stdout_lines = []
         try:
             command = subprocess.Popen(
                 exploit_command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 preexec_fn=os.setsid,
+                text=True,  # Decode stdout/stderr as text automatically
+                bufsize=1,
             )
 
+            stdout_thread = threading.Thread(
+                target=self.read_output_to_list, args=(command.stdout, stdout_lines)
+            )
+            # stderr_thread = threading.Thread(
+            #     target=self.read_output_to_list, args=(command.stderr, stderr_lines)
+            # )
+
+            stdout_thread.start()
+            # stderr_thread.start()
+
             # TODO: these are set to DEBUG by default
-            self.logger.info(f"Executing {exploit_command} with timeout {timeout}")
-            stdout, stderr = command.communicate(timeout=timeout)
+            # self.logger.info(f"Executing {exploit_command} with timeout {timeout}")
+            _ = command.wait(timeout=timeout)
+            # Not using return code for now
 
-            self.logger.info(f"Command output: {stdout.strip()}")
-            # TODO: if the stderr is not empty I want to report it in the report maybe ?
-            self.logger.info(f"Command error: {stderr}")
-
-            data = True, stdout
         except Exception as e:
             self.logger.warning(f"{e}")
-            # for child in psutil.Process(pid).children(recursive=True):
-            #     child.kill()
-            os.killpg(os.getpgid(command.pid), signal.SIGTERM)
+            os.killpg(os.getpgid(command.pid), signal.SIGKILL)
             time.sleep(1)
-            data = False, b""
 
-        returncode = command.returncode if command else -1
+        # # TODO: if the stderr is not empty I want to report it in the report maybe ?
 
-        if change_directory:
+        if directory is not None:
             os.chdir(TOOLKIT_INSTALL_DIR)
 
-        self.logger.debug(f"Command result: {data}")
-        return data
+        return "".join(stdout_lines)
 
-    # def execute_manual_exploit(
-    #     self,
-    #     target,
-    #     exploit_command,
-    #     exploit_name,
-    #     timeout=ConnVerifier.TIMEOUT,
-    #     change_directory=False,
-    #     directory=None,
-    # ) -> tuple:
-    #     pid = None
-    #     if change_directory:
-    #         os.chdir(directory)
-    #         self.logger.info("Engine.execute_command -> chdir to {}".format(directory))
-    #     else:
-    #         os.chdir(TOOLKIT_INSTALL_DIR)
-
-    #     data = False, b""
-
-    #     try:
-    #         self.logger.info(
-    #             "Starting the next exploit - name {} and command {}".format(
-    #                 exploit_name, exploit_command
-    #             )
-    #         )
-    #         command = subprocess.Popen(
-    #             " ".join(exploit_command),
-    #             stdout=subprocess.PIPE,
-    #             shell=True,
-    #             preexec_fn=os.setsid,
-    #         )  # for some reason doesn't accept tokenized exploit_command (leads to a bug)
-    #         pid = command.pid
-
-    #         self.logger.info(
-    #             "Engine.execute_command -> sleeping for {} seconds".format(timeout)
-    #         )
-
-    #         new_data = command.communicate()[0]
-    #         self.logger.info(
-    #             "Engine.execute_command -> command.communicate " + str(new_data)
-    #         )
-    #         data = True, new_data
-    #     except subprocess.TimeoutExpired as e:
-    #         self.logger.info(
-    #             "Engine.execute_command -> Killing the exploit and sleeping for another 1 second"
-    #         )
-    #         for child in psutil.Process(pid).children(recursive=True):
-    #             child.kill()
-    #         os.killpg(os.getpgid(command.pid), signal.SIGTERM)
-    #         time.sleep(1)
-
-    #     if change_directory:
-    #         os.chdir(TOOLKIT_INSTALL_DIR)
-
-    #     self.logger.info("Engine.execute_command -> data -> " + str(data))
-    #     return data
-
-    def process_raw_data(self, data, if_failed):
+    def process_raw_data(self, data, exploit_name: str) -> tuple:
         return_code = ReturnCode.UNKNOWN_STATE
         output_data = ""
+        parsed_data = {}
+
+        # Ideally an exploit should terminate with a JSON string such as
+        # {"return_code": code, "return_data": "data"}
+        # If not, we need to have a fallback mechanism to process the output
 
         try:
             # TODO: if data is empty, return error directly
-            if not data:
-                parsed_data = {}
-            else:
-                pyobj = ast.literal_eval(data.strip().decode("utf-8"))
+            if data:
+                pyobj = ast.literal_eval(data)
                 if isinstance(pyobj, dict):
                     parsed_data = json.loads(json.dumps(pyobj))
 
-            return_code = parsed_data.get("return_code", ReturnCode.UNKNOWN_STATE)
-            output_data = parsed_data.get("return_data", "")
+        except Exception as _:
+            # self.logger.error(f"Error processing the raw output: {e}")
+            parsed_data = self.process_custom_output(data, exploit_name)
 
-        except Exception as e:
-            self.logger.error(f"Error processing the raw output: {e}")
-            output_data = "Error processing the raw output"
+        return_code = parsed_data.get("return_code", ReturnCode.UNKNOWN_STATE)
+        output_data = parsed_data.get("return_data", "")
 
         return return_code, output_data
 
-    def pull_information(self, target, current_exploit: Exploit) -> None:
+    def pull_information(self, target, exploit: Exploit) -> None:
         # Basically copy from 1 directory to another one
         if self.pull_location is None:
-            self.check_pull_location(target, current_exploit.name)
+            self.check_pull_location(target, exploit.name)
 
-        if current_exploit.log_pull["from_directory"]:
+        if exploit.log_pull["from_directory"]:
             directory = TOOLKIT_INSTALL_DIR
-            if current_exploit.log_pull["relative_directory"]:
-                pull_dir = current_exploit.log_pull["pull_directory"]
+            if exploit.log_pull["relative_directory"]:
+                pull_dir = exploit.log_pull["pull_directory"]
                 if not pull_dir.startswith("/"):
                     directory += "/"
                 directory = directory + pull_dir
             else:
-                directory = current_exploit.log_pull["pull_directory"]
+                directory = exploit.log_pull["pull_directory"]
 
             shutil.copytree(directory, self.pull_location, dirs_exist_ok=True)
         else:
-            self.logger.debug("from_directory: is not yet implemented")
+            self.logger.debug("pull from_directory is not yet implemented")
             return
-            raise Exception("from_directory: false, is not yet implemented")
 
-    def pull_information_from_file(self, target, current_exploit: Exploit) -> None:
+    def pull_information_from_file(self, target, exploit: Exploit) -> None:
         if self.pull_location is None:
-            self.check_pull_location(target, current_exploit.name)
+            self.check_pull_location(target, exploit.name)
 
     def process_additional_paramters(self, parameters: list) -> dict:
         self.logger.debug(f"Process additional parameters: {parameters}")
@@ -334,8 +277,34 @@ class Engine:
     def get_parameters_list(self, parameters: list) -> list:
         return [parameters[i] for i in range(0, len(parameters), 2)]
 
-    def check_pull_location(self, target, current_exploit_name):
-        self.pull_location = OUTPUT_DIR.format(
-            target=target, exploit=current_exploit_name
-        )
+    def check_pull_location(self, target: str, exploit_name: str) -> None:
+        self.pull_location = OUTPUT_DIR.format(target=target, exploit=exploit_name)
         Path(self.pull_location).mkdir(parents=True, exist_ok=True)
+
+    def process_custom_output(self, data, exploit_name) -> None:
+        """
+        Process custom output from the exploit command.
+        This is a placeholder for any specific processing logic needed for custom outputs.
+        """
+        # TODO: this could be made dynamic with the vulnerability conditions inside the exploit yaml
+        if "braktooth" in exploit_name:
+            # Custom processing logic for Braktooth
+            if "Device vulnerable" in data:
+                return {
+                    "return_code": ReturnCode.VULNERABLE,
+                    "return_data": "Device is vulnerable.",
+                }
+            else:
+                return {
+                    "return_code": ReturnCode.NOT_VULNERABLE,
+                    "return_data": "Device is not vulnerable.",
+                }
+        else:
+            # Fallback processing for other exploits
+            self.logger.warning(
+                f"Custom output processing not implemented for {exploit_name}"
+            )
+            return {
+                "return_code": ReturnCode.UNKNOWN_STATE,
+                "return_data": "",
+            }
