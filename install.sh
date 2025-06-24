@@ -110,11 +110,11 @@ if [ "$ALREADY_INSTALLED" = false ]; then
   #### Installing braktooth
   wget -O $TOOLS_DIR/release.zip https://github.com/Matheus-Garbelini/braktooth_esp32_bluetooth_classic_attacks/releases/download/v1.0.1/release.zip
   mkdir $TOOLS_DIR/braktooth
-  unzip -q release.zip -d $TOOLS_DIR/braktooth
-  rm -f release.zip
+  unzip -q $TOOLS_DIR/release.zip -d $TOOLS_DIR/braktooth
+  rm -f $TOOLS_DIR/release.zip
 
   unzip -q $TOOLS_DIR/braktooth/esp32driver.zip -d $TOOLS_DIR/braktooth
-  rm -f esp32driver.zip
+  rm -f $TOOLS_DIR/braktooth/esp32driver.zip
   #### Cannot install it as there might be no Braktooth connected to the machine
 
 
