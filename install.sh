@@ -223,7 +223,7 @@ while true; do
       # wget -O /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
       # sudo dpkg -i /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
       # rm -f /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-
+      apt-get install -y libgflags-dev libgoogle-glog-dev liblua5.2-dev
       #### Installing braktooth
       mkdir -p $TOOLS_DIR/braktooth
       wget -O $TOOLS_DIR/braktooth/esp32driver.zip https://github.com/Matheus-Garbelini/braktooth_esp32_bluetooth_classic_attacks/releases/download/v1.2.0/esp32driver.zip
