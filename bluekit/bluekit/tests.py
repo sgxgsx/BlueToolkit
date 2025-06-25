@@ -199,7 +199,7 @@ class TestEngine(unittest.TestCase):
         pull_in_command = exploit.log_pull["in_command"]
         self.assertRaises(
             Exception,
-            engine.construct_exploit_command,
+            engine.build_exploit_command,
             (
                 test_data["target"],
                 exploit,
@@ -214,7 +214,7 @@ class TestEngine(unittest.TestCase):
         engine = Engine()
         pull_in_command = exploit.log_pull["in_command"]
         engine.check_pull_location(test_data["target"], exploit.name)
-        command = engine.construct_exploit_command(
+        command = engine.build_exploit_command(
             test_data["target"], exploit, test_data["parameters"], pull_in_command
         )
         # print(command)
@@ -235,7 +235,7 @@ class TestEngine(unittest.TestCase):
         engine = Engine()
         engine.check_pull_location(test_data["target"], exploit.name)
         pull_in_command = exploit.log_pull["in_command"]
-        command = engine.construct_exploit_command(
+        command = engine.build_exploit_command(
             test_data["target"], exploit, test_data["parameters"], pull_in_command
         )
         print(command)
