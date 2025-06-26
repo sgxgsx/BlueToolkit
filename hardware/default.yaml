@@ -1,7 +1,6 @@
 name: "default"
 description: "Default linux/ubuntu profile"
-setup_verification: ""
-needs_setup_verification: false
+setup_verification: null
 working_directory: null
 bt_version_min: 1.0
 bt_version_max: 5.3

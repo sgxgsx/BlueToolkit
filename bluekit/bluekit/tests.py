@@ -152,7 +152,7 @@ test_data = {
 class TestHardwareFactory(unittest.TestCase):
     def test_get_all_hardware_profiles(self):
         hf = HardwareFactory()
-        hf_profiles = hf.get_all_hardware_profiles()
+        hf_profiles = hf.get_hardware_profiles()
         for hardware in hf_profiles:
             self.assertIn(hardware.name, ["esp32", "nexus5"])
 
@@ -165,7 +165,7 @@ class TestHardwareFactory(unittest.TestCase):
 class TestExploitFactory(unittest.TestCase):
     def test_get_all_hardware_profiles(self):
         ef = ExploitFactory()
-        ef_profiles = ef.get_all_exploits()
+        ef_profiles = ef.get_exploits()
         for exploit in ef_profiles:
             self.assertIn(exploit.name, ["braktooth_knob", "internalblue_knob"])
 

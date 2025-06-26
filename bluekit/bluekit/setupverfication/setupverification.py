@@ -25,7 +25,7 @@ class SetupVerifier:
     @staticmethod
     def check_setup_nrf52() -> bool:
         try:
-            output = subprocess.check_output("lsusb ", shell=True).decode()
+            output = subprocess.check_output("lsusb", shell=True).decode()
             if "c0ca:c01a" in output:
                 return True
 
@@ -44,7 +44,7 @@ class SetupVerifier:
                 return True
 
             SetupVerifier.logger.info("ESP32 is not connected or not available")
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             SetupVerifier.logger.info(f"Error checking esp32 setup {e}")
         return False
 

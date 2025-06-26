@@ -21,7 +21,6 @@ from bluekit.factories.hardwarefactory import HardwareFactory
 from bluekit.engine.engine import Engine
 from bluekit.verifyconn import check_device_status
 from bluekit.checkpoint import Checkpoint
-from bluekit.setupverfication.setupverification import SetupVerifier
 from bluekit.recon import Recon, load_recon_data
 from bluekit.report import Report
 
@@ -38,7 +37,6 @@ class BlueKit:
         self.hardwareFactory = HardwareFactory()
         self.engine = Engine()
         self.checkpoint = Checkpoint()
-        self.setupverifier = SetupVerifier()
         self.recon = Recon()
         self.report = Report(self)
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -68,50 +66,38 @@ class BlueKit:
         self.set_exploits(available_exploits)
 
     def get_available_exploits(self):
-        return self.exploitFactory.get_all_exploits()
+        return self.exploitFactory.get_exploits()
 
     def get_available_hardware(self):
-        return self.hardwareFactory.get_all_hardware_profiles()
+        return self.hardwareFactory.get_hardware_profiles()
 
     def check_setup(self):
         available_hardware = self.get_available_hardware()
-        hardware_verfied = self.setupverifier.verify_setup_multiple_hardware(
-            available_hardware
-        )
-        print("Hardware availability:")
+
         for hardware in available_hardware:
-            print(f"{hardware.name} - status - {hardware_verfied[hardware.name]}")
+            self.logger.info(f"{hardware.name} - status - {hardware.is_verified}")
 
-    def get_exploits_with_setup(self):
-        available_exploits = self.get_available_exploits()
-        available_hardware = self.get_available_hardware()
-        hardware_verfied = self.setupverifier.verify_setup_multiple_hardware(
-            available_hardware
-        )
-        return [
-            exploit
-            for exploit in available_exploits
-            if hardware_verfied[exploit.hardware]
+    def get_exploits_with_setup(self, exploits: list = None):
+        if exploits is None:
+            exploits = self.get_available_exploits()
+        verified_hardware = [
+            hw.name for hw in self.get_available_hardware() if hw.is_verified
         ]
-
-    def get_exploits_with_setup_exploits(self, exploits):
-        available_hardware = self.get_available_hardware()
-        hardware_verfied = self.setupverifier.verify_setup_multiple_hardware(
-            available_hardware
-        )
-        return [exploit for exploit in exploits if hardware_verfied[exploit.hardware]]
+        return [
+            exploit for exploit in exploits if exploit.hardware in verified_hardware
+        ]
 
     def print_available_exploits(self):
         available_exploits = self.get_available_exploits()
-        available_hardware = self.get_available_hardware()
-        hardware_verfied = self.setupverifier.verify_setup_multiple_hardware(
-            available_hardware
-        )
+
+        verified_hardware = [
+            hw.name for hw in self.get_available_hardware() if hw.is_verified
+        ]
 
         available_exploits = sorted(available_exploits, key=lambda x: x.type)
         available_exploits = sorted(available_exploits, key=lambda x: x.hardware)
         available_exploits = sorted(
-            available_exploits, key=lambda x: not hardware_verfied[x.hardware]
+            available_exploits, key=lambda x: x.hardware not in verified_hardware
         )
 
         headers = [
@@ -132,7 +118,7 @@ class BlueKit:
                     exploit.name,
                     exploit.type,
                     exploit.hardware,
-                    "✅" if hardware_verfied[exploit.hardware] else "❌",
+                    "✅" if exploit.hardware in verified_hardware else "❌",
                     exploit.bt_version_min,
                     exploit.bt_version_max,
                     exploit.bt_type,
@@ -297,7 +283,7 @@ class BlueKit:
         ) = self.checkpoint.load_state(target)
         exploit_pool = self.exploit_filter(
             target=self.target,
-            exploits=self.get_exploits_with_setup_exploits(exploit_pool),
+            exploits=self.get_exploits_with_setup(exploits=exploit_pool),
         )
         available_exploits = self.get_available_exploits()
 

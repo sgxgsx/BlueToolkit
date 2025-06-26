@@ -88,7 +88,7 @@ class Report:
 
     def generate_report(self, target):
         done_exploits = self.get_done_exploits(target=target)
-        all_exploits = self.exploitFactory.get_all_exploits()
+        all_exploits = self.exploitFactory.get_exploits()
         skipped_exploits = [
             exploit.name
             for exploit in all_exploits
@@ -223,7 +223,7 @@ class Report:
 
     def generate_machine_readable_report(self, target):
         done_exploits = self.get_done_exploits(target=target)
-        all_exploits = self.exploitFactory.get_all_exploits()
+        all_exploits = self.exploitFactory.get_exploits()
         skipped_exploits = [
             exploit.name
             for exploit in all_exploits

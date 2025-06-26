@@ -1,16 +1,18 @@
 import json
 import logging
-from pathlib import Path
+import os
 from bluekit.constants import CHECKPOINT_PATH
 from bluekit.factories.exploitfactory import ExploitFactory
 
 
 class Checkpoint:
+    def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
+
     def check_if_checkpoint(self, target) -> bool:
-        checkpoint = Path(CHECKPOINT_PATH.format(target=target))
-        if checkpoint.is_file():
-            logging.info("Checkpoint file exists")
+        if os.path.isfile(CHECKPOINT_PATH.format(target=target)):
             return True
+        self.logger.debug(f"No checkpoint found for target: {target}")
         return False
 
     # Create a checkpoint
@@ -34,21 +36,20 @@ class Checkpoint:
             "exploits_to_scan": exploits_to_scan,
             "exclude_exploits": exclude_exploits,
         }
-        logging.debug("Checkpoint - preserve_state -> document -> " + str(doc))
         checkpoint = open(CHECKPOINT_PATH.format(target=target), "w")
         json.dump(doc, checkpoint, indent=4)
         checkpoint.close()
 
+        self.logger.debug(f"Preserving state for {target}")
+
     # Loading a checkpoint
     def load_state(self, target) -> None:
-        logging.info("Loading checkpoint state")
         checkpoint = open(
             CHECKPOINT_PATH.format(target=target),
         )
         doc = json.load(checkpoint)
-        logging.info("Checkpoint state loaded")
-        logging.info(
-            f"Checkpoint - load_state -> document done_exploits -> {doc['done_exploits']}"
+        self.logger.debug(
+            f"Checkpoint state loaded for {target}. {len(doc['done_exploits'])} exploits already tested."
         )
 
         done_exploit_names = {exploit[0] for exploit in doc["done_exploits"]}
@@ -56,7 +57,10 @@ class Checkpoint:
         exploit_pool = [
             constructed_exploit
             for exploit_data in doc["exploits"]
-            if (constructed_exploit := ExploitFactory.construct_exploit(exploit_data)).name not in done_exploit_names
+            if (
+                constructed_exploit := ExploitFactory.construct_exploit(exploit_data)
+            ).name
+            not in done_exploit_names
         ]
         # done_exploits_intermediate = [
         #     exploit[0] for exploit in doc["done_exploits"]

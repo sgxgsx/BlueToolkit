@@ -1,9 +1,7 @@
 import yaml
-from os import listdir
-from os.path import isfile, join
-
+import os
 from bluekit.constants import HARDWARE_DIR
-from bluekit.models.hardware import Hadrware
+from bluekit.models.hardware import Hardware
 
 
 class HardwareFactory:
@@ -11,22 +9,25 @@ class HardwareFactory:
         self.hardware_dir = hardware_dir
         self.hardware = None
 
-    def get_all_hardware_profiles(self, force_reload=False):
+    def get_hardware_profiles(self, force_reload=False):
         if self.hardware is None or force_reload:
-            onlyfiles = [
-                join(self.hardware_dir, f)
-                for f in listdir(self.hardware_dir)
-                if isfile(join(self.hardware_dir, f))
+            files = [
+                entry.path for entry in os.scandir(self.hardware_dir) if entry.is_file()
             ]
 
-            hardware_profiles = []
-            for filename in onlyfiles:
-                hardware_profiles.append(self.read_hardware(filename))
-            self.hardware = hardware_profiles
+            self.hardware = [
+                HardwareFactory.read_hardware(file)
+                for file in files
+                if file.endswith(".yaml") or file.endswith(".yml")
+            ]
+
+            for hw in self.hardware:
+                hw.check_setup()
+
         return self.hardware
 
-    def read_hardware(self, filename):
-        f = open(filename, "r")
-        details = yaml.safe_load(f)
-        f.close()
-        return Hadrware(details)
+    @staticmethod
+    def read_hardware(filename):
+        with open(filename, "r") as f:
+            details = yaml.safe_load(f)
+        return Hardware(details)
