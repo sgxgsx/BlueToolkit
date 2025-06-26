@@ -220,27 +220,36 @@ while true; do
       echo "Installing Braktooth"
       # Requirements
       # apt-get install libpulse0 qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools libc-ares-dev 
-      # wget -O /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-      # sudo dpkg -i /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-      # rm -f /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+      wget -O /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+      sudo dpkg -i /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+      rm -f /tmp/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
       apt-get install -y libgflags-dev libgoogle-glog-dev liblua5.2-dev
       #### Installing braktooth
+
+
       mkdir -p $TOOLS_DIR/braktooth
+      # We use release 1.0.1 for the tool since 1.2.0 does not completely work in 22.04
+      wget -O $TOOLS_DIR/release.zip https://github.com/Matheus-Garbelini/braktooth_esp32_bluetooth_classic_attacks/releases/download/v1.0.1/release.zip
+      unzip -q $TOOLS_DIR/release.zip -d $TOOLS_DIR/braktooth
+      rm -f $TOOLS_DIR/release.zip $TOOLS_DIR/braktooth/esp32driver.zip
+      
+      # We use 1.2.0 for the ESP32 Firmware as 1.0.1 does not work in 22.04
       wget -O $TOOLS_DIR/braktooth/esp32driver.zip https://github.com/Matheus-Garbelini/braktooth_esp32_bluetooth_classic_attacks/releases/download/v1.2.0/esp32driver.zip
-      wget -O $TOOLS_DIR/braktooth/wdissector.tar.zst https://github.com/Matheus-Garbelini/braktooth_esp32_bluetooth_classic_attacks/releases/download/v1.2.0/wdissector_x86_64.tar.zst
+      # wget -O $TOOLS_DIR/braktooth/wdissector.tar.zst https://github.com/Matheus-Garbelini/braktooth_esp32_bluetooth_classic_attacks/releases/download/v1.2.0/wdissector_x86_64.tar.zst
 
       unzip -q $TOOLS_DIR/braktooth/esp32driver.zip -d $TOOLS_DIR/braktooth
       rm -f $TOOLS_DIR/braktooth/esp32driver.zip
       #### Cannot install it as there might be no Braktooth connected to the machine
 
       # ESP firmware
-      python3 $TOOLS_DIR/braktooth/release/firmware.py flash /dev/ttyUSB1
+      # python3 $TOOLS_DIR/braktooth/release/firmware.py flash /dev/ttyUSB1
 
       tar -I zstd -xf $TOOLS_DIR/braktooth/wdissector.tar.zst -C $TOOLS_DIR/braktooth/
       rm -f $TOOLS_DIR/braktooth/wdissector.tar.zst
-      # sed -i 's/qt5-default//g' $TOOLS_DIR/braktooth/wdissector/requirements.sh
+      sed -i 's/qt5-default//g' $TOOLS_DIR/braktooth/wdissector/requirements.sh
 
       chmod +x $TOOLS_DIR/braktooth/wdissector/requirements.sh
+      $TOOLS_DIR/braktooth/wdissector/requirements.sh
       
       echo "Done."
     break 
