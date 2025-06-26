@@ -23,6 +23,20 @@ class SetupVerifier:
         return hardware_verification
 
     @staticmethod
+    def check_setup_nrf52() -> bool:
+        try:
+            output = subprocess.check_output("lsusb ", shell=True).decode()
+            if "c0ca:c01a" in output:
+                return True
+
+            SetupVerifier.logger.info(
+                "NRF52 is not connected or lsusb is not installed"
+            )
+        except subprocess.CalledProcessError as e:
+            SetupVerifier.logger.info(f"Error checking nrf52 setup: {e}")
+        return False
+
+    @staticmethod
     def check_setup_esp32() -> bool:
         try:
             output = glob.glob("/dev/ttyUSB*")
@@ -51,6 +65,7 @@ class SetupVerifier:
 
 # Add your hardware verification function
 hardware_verfier = {
+    "nrf52": SetupVerifier.check_setup_nrf52,
     "esp32": SetupVerifier.check_setup_esp32,
     "nexus5": SetupVerifier.check_setup_nexus5,
 }
