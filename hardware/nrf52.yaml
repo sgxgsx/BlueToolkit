@@ -1,0 +1,6 @@
+name: "nrf52"
+description: "nrf52 for Bluetooth Low Energy exploits"
+setup_verification: "nrf52_verify.py"
+working_directory: null
+bt_version_min: 4.2 # ?
+bt_version_max: 5.4
