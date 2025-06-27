@@ -1,25 +1,22 @@
 import json
 import logging
-import re
 import shutil
 from tabulate import tabulate
-from colorama import Fore, Back, Style, init
+from colorama import Fore, Style
 from pathlib import Path
 import os
 
-
-from bluekit.constants import ReturnCode
 
 from bluekit.constants import (
     TARGET_DIR,
     REPORT_OUTPUT_FILE,
     SKIP_DIRECTORIES,
     MAX_CHARS_DATA_TRUNCATION,
-)
-from bluekit.constants import (
     OUTPUT_DIR,
     FULL_REPORT_OUTPUT_FILE,
+    ReturnCode,
 )
+
 from bluekit.factories.exploitfactory import ExploitFactory
 
 
@@ -67,7 +64,7 @@ class Report:
 
     def read_data(self, exploit_name, target):
         filename = REPORT_OUTPUT_FILE.format(target=target, exploit=exploit_name)
-        if Path(filename).exists():
+        if os.path.isfile(filename):
             self.logger.debug(f"Loading report {filename}")
 
             jsonfile = open(
@@ -78,10 +75,9 @@ class Report:
         return None, None
 
     def get_done_exploits(self, target):
-        path = Path(TARGET_DIR.format(target=target))
         exploits = [
             entry.name
-            for entry in path.iterdir()
+            for entry in os.scandir(TARGET_DIR.format(target=target))
             if entry.is_dir() and entry.name not in SKIP_DIRECTORIES
         ]
         return exploits

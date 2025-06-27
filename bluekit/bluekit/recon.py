@@ -1,10 +1,6 @@
 import json
-import subprocess
-import argparse
-import re
 import logging
 import time
-import signal
 from pybtool.device import Device
 from pybtool.constants import (
     BLE_ROLE_CENTRAL,
@@ -15,13 +11,9 @@ from pybtool.constants import (
 
 
 from pathlib import Path
-from bluekit.logger import Logger
 from bluekit.verifyconn import check_device_status, print_device_status
 
-from bluekit.constants import (
-    OUTPUT_DIR,
-)
-from bluekit.constants import LOG_FILE
+from bluekit.constants import OUTPUT_DIR, LOG_FILE
 from pybtool.constants import BT_MODE_DUAL
 
 
