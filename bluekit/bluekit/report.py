@@ -3,7 +3,6 @@ import logging
 import shutil
 from tabulate import tabulate
 from colorama import Fore, Style
-from pathlib import Path
 import os
 
 
@@ -47,9 +46,8 @@ def report_undefined(data):
 
 
 class Report:
-    def __init__(self, bluekit):
-        self.exploitFactory = ExploitFactory()
-        self.bluekit = bluekit
+    def __init__(self, exploit_factory: ExploitFactory = None):
+        self.exploitFactory = exploit_factory or ExploitFactory()
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def save_data(self, exploit_name, target, data, code):
@@ -200,25 +198,25 @@ class Report:
         return table
 
     def get_manufacturer(self, target) -> str:
-        file_path = Path(
-            OUTPUT_DIR.format(target=target, exploit="recon") + "recon.json"
+        file = os.path.join(
+            OUTPUT_DIR.format(target=target, exploit="recon"), "recon.json"
         )
-        if file_path.is_file():
-            with open(file_path, "r") as f:
+        if os.path.isfile(file):
+            with open(file, "r") as f:
                 data = json.load(f)
                 return data["vendor"]
 
     def get_bt_version(self, target) -> float:
-        file_path = Path(
-            OUTPUT_DIR.format(target=target, exploit="recon") + "recon.json"
+        file = os.path.join(
+            OUTPUT_DIR.format(target=target, exploit="recon"), "recon.json"
         )
-        if file_path.is_file():
-            with open(file_path, "r") as f:
+        if os.path.isfile(file):
+            with open(file, "r") as f:
                 data = json.load(f)
                 return data["version"]
 
-    def generate_machine_readable_report(self, target):
-        done_exploits = self.get_done_exploits(target=target)
+    def generate_machine_readable_report(self, target: str, directory: str):
+        done_exploits = self.get_done_exploits(target=target).sort(key=lambda x: x[2])
         all_exploits = self.exploitFactory.get_exploits()
         skipped_exploits = [
             exploit.name
@@ -228,21 +226,23 @@ class Report:
 
         self.logger.debug(f"Tested exploits: {done_exploits}")
         self.logger.debug(f"Available exploits: {all_exploits}")
-        self.logger.debug(f"Skipped_exploits: {skipped_exploits}")
+        self.logger.debug(f"Skipped exploits: {skipped_exploits}")
 
         index = 1
-        sorted_done_exploits = sorted(done_exploits, key=lambda x: x[2])
+        # done_exploits.sort(key=lambda x: x[2])
 
         output_json = {}
-        sorted_done_exploits_json = []
+        done_exploits_json = []
         skipped_exploits_json = []
-        for exploit in sorted_done_exploits:
+        for exploit in done_exploits:
             code, data = self.read_data(exploit_name=exploit, target=target)
-            if code is None:
-                code = ReturnCode.UNKNOWN_STATE
-                data = "Error during loading the report"
-            sorted_done_exploits_json.append(
-                {"index": index, "name": exploit, "code": code, "data": data}
+            done_exploits_json.append(
+                {
+                    "index": index,
+                    "name": exploit,
+                    "code": code if code is not None else ReturnCode.UNKNOWN_STATE,
+                    "data": data if code is not None else "Error with data",
+                }
             )
             index += 1
         for skipped_exploit in skipped_exploits:
@@ -250,13 +250,13 @@ class Report:
                 {
                     "index": index,
                     "name": skipped_exploit,
-                    "code": 6,
+                    "code": ReturnCode.SKIPPED,
                     "data": "Not tested",
                 }
             )
             index += 1
 
-        output_json["done_exploits"] = sorted_done_exploits_json
+        output_json["done_exploits"] = done_exploits_json
         output_json["skipped_exploits"] = skipped_exploits_json
         output_json["manually_added_exploits"] = list()
         output_json["bt_version"] = self.get_bt_version(target=target)
@@ -274,7 +274,7 @@ class Report:
         jsonfile.close()
 
         # Verify the file was created
-        if not os.path.exists(source_file):
+        if not os.path.isfile(source_file):
             self.logger.error(f"Failed to create report at {source_file}")
             return
 
@@ -283,7 +283,7 @@ class Report:
         # Copy the report to current directory with MAC address in filename
 
         # Get the original directory from BlueKit instance
-        dest_file = os.path.join(self.bluekit.original_dir, f"{target}_report.json")
+        dest_file = os.path.join(directory, f"{target}_report.json")
         try:
             shutil.copy2(source_file, dest_file)
             # Allow non-root users to read the file

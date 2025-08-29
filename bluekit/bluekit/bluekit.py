@@ -1,13 +1,11 @@
 import importlib
 import os
-import pkg_resources
 import sys
 import argparse
 import logging
 import signal
 
 from tqdm import tqdm
-from pathlib import Path
 from tabulate import tabulate
 from colorama import Fore
 
@@ -38,7 +36,7 @@ class BlueKit:
         self.engine = Engine()
         self.checkpoint = Checkpoint()
         self.recon = Recon()
-        self.report = Report(self)
+        self.report = Report(self.exploitFactory)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.original_dir = os.getcwd()
 
@@ -94,10 +92,12 @@ class BlueKit:
             hw.name for hw in self.get_available_hardware() if hw.is_verified
         ]
 
-        available_exploits = sorted(available_exploits, key=lambda x: x.type)
-        available_exploits = sorted(available_exploits, key=lambda x: x.hardware)
-        available_exploits = sorted(
-            available_exploits, key=lambda x: x.hardware not in verified_hardware
+        available_exploits.sort(
+            key=lambda x: (
+                x.hardware not in verified_hardware,
+                x.hardware,
+                x.type,
+            ),
         )
 
         headers = [
@@ -110,20 +110,19 @@ class BlueKit:
             "BT max",
             "BT Type",
         ]
-        table_data = []
-        for idx, exploit in enumerate(available_exploits):
-            table_data.append(
-                [
-                    idx + 1,
-                    exploit.name,
-                    exploit.type,
-                    exploit.hardware,
-                    "✅" if exploit.hardware in verified_hardware else "❌",
-                    exploit.bt_version_min,
-                    exploit.bt_version_max,
-                    exploit.bt_type,
-                ]
-            )
+        table_data = [
+            [
+                idx + 1,
+                exploit.name,
+                exploit.type,
+                exploit.hardware,
+                "✅" if exploit.hardware in verified_hardware else "❌",
+                exploit.bt_version_min,
+                exploit.bt_version_max,
+                exploit.bt_type,
+            ]
+            for idx, exploit in enumerate(available_exploits)
+        ]
 
         table = tabulate(
             table_data,
@@ -138,17 +137,20 @@ class BlueKit:
 
     def test_one_by_one(self, target, parameters, exploits) -> None:
         for i in tqdm(range(0, len(exploits), 1), desc="Testing exploits"):
-            self.check_target(target)
-            response_code, data = self.test_exploit(target, exploits[i], parameters)
-            # done TODO add results data to done_exploits
-            self.done_exploits.append([exploits[i].name, response_code, data])
-            self.logger.debug(f"{self.done_exploits} exploits done")
-            self.report.save_data(
-                exploit_name=exploits[i].name,
-                target=target,
-                data=data,
-                code=response_code,
-            )
+            if self.check_target(target):
+                response_code, data = self.test_exploit(target, exploits[i], parameters)
+                # done TODO add results data to done_exploits
+                self.done_exploits.append([exploits[i].name, response_code, data])
+                self.logger.debug(f"{self.done_exploits} exploits done")
+                self.report.save_data(
+                    exploit_name=exploits[i].name,
+                    target=target,
+                    data=data,
+                    code=response_code,
+                )
+            else:
+                self.preserve_state()
+                sys.exit()
 
     def check_target(self, target):
         while True:
@@ -164,11 +166,11 @@ class BlueKit:
                 if cmd.lower() in ("y", "", " "):
                     self.logger.debug("Trying to verify connectivity again")
                     break
-                elif cmd.lower() == "n":
-                    self.preserve_state()
-                    sys.exit()
-                else:
-                    print("Invalid input. Please enter 'y' or 'n'.")
+
+                if cmd.lower() == "n":
+                    return False
+
+                print("Invalid input. Please enter 'y' or 'n'.")
 
     # Start testing from a checkpoint
     def start_from_a_checkpoint(self, target) -> None:
@@ -306,7 +308,9 @@ class BlueKit:
         print(table)
 
     def generate_machine_readable_report(self, target):
-        self.report.generate_machine_readable_report(target=target)
+        self.report.generate_machine_readable_report(
+            target=target, directory=self.original_dir
+        )
 
 
 class TqdmLoggingHandler(logging.Handler):
@@ -432,7 +436,7 @@ def main():
 
     # script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
     # logging.info(script_dir)
-    distribution = pkg_resources.get_distribution("bluekit")
+    distribution = importlib.metadata.version("bluekit")
 
     logging.info(f"Using {distribution}")
     # logging.info(Path(__file__))

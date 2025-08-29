@@ -1,7 +1,3 @@
-import logging
-import os
-from pathlib import Path
-
 # BRAKTOOTH_GET_EXPLOITS = "./bin/bt_exploiter --list-exploits"
 # BRAKTOOTH_GENERIC_EXPLOIT = "./bin/bt_exploiter --host-port=/dev/ttyUSB1 --target={target} --exploit={exploit} --random_bdaddress"
 
@@ -32,6 +28,7 @@ class ReturnCode:
     UNDEFINED = 3
     UNKNOWN_STATE = 4
     NOT_TESTED = 5
+    SKIPPED = 6
 
 
 class ExploitType:
