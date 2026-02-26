@@ -10,8 +10,8 @@ sudo apt-get install libc-ares-dev
 
 
 wget https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
-rm -f libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
+sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+rm -f libssl1.1_1.1.1f-1ubuntu2_amd64.deb
 
 source /usr/share/BlueToolkit/.venv/bin/activate
 
@@ -26,12 +26,3 @@ cat ./requirements.sh | sed -e 's/qt5-default//' > ./requirements2.sh
 chmod +x ./requirements2.sh
 
 sudo ./requirements2.sh
-
-
-
-
-
-
-
-
-
