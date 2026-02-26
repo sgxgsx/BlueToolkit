@@ -133,8 +133,7 @@ sudo python3.10 -m venv bluing
 source bluing/bin/activate
 
 sudo python3.10 -m pip install dbus-python==1.2.18
-sudo python3.10 -m pip install --no-dependencies bluing PyGObject==3.50.0 docopt btsm btatt bluepy configobj btl2cap pkginfo xpycommon halo pyserial bthci btgatt log_symbols colorama spinners six termcolor
-
+sudo python3.10 -m pip install --no-dependencies git+https://github.com/fO-000/bluing.git PyGObject==3.50.0 docopt btsm btatt bluepy configobj btl2cap pkginfo xpycommon halo pyserial bthci btgatt log_symbols colorama spinners six termcolor
 cd ../..
 source /usr/share/BlueToolkit/.venv/bin/activate
 
@@ -176,7 +175,7 @@ sed -i 's/LMP_VSC_CMD_END = 0x06/LMP_VSC_CMD_END = 0x17/' /usr/share/BlueToolkit
 
 python3 -m pip install https://github.com/seemoo-lab/internalblue/archive/master.zip # --break-system-packages
 
-#### Blueborne 
+#### Blueborne
 
 cd /usr/share/BlueToolkit/modules/tools/blueborne
 git clone https://github.com/sgxgsx/blueborne-CVE-2017-1000251 /usr/share/BlueToolkit/modules/tools/blueborne/blueborne-CVE-2017-1000251
