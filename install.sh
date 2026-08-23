@@ -171,8 +171,8 @@ fi
 # Activate virtual environment
 source "$VENV_PATH/bin/activate"
 
-# Call bluekit with all passed arguments
-exec bluekit "$@"
+# Call the venv entry point directly so this wrapper cannot resolve itself.
+exec "$VENV_PATH/bin/bluekit" "$@"
 EOF
 
 chmod +x /usr/local/bin/bluekit
